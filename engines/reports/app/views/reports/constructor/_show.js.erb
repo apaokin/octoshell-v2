@@ -1,0 +1,249 @@
+<% @alpaca_raw_json.each do |key, value| %>
+  var <%= key %> =  <%= raw value.to_json %>;
+<% end %>
+$("#main-form").alpaca({
+    "data": {
+    },
+    "schema": {
+        "type": "object",
+        "properties": {
+              "class_name":{
+                "title": '<%= t(".class_name") %>',
+                "enum": class_options,
+                "required": true
+              },
+              "attributes":{
+                "title": '<%= t(".associations") %>',
+                "type":'string',
+                "required": true
+              },
+              "associations":{
+                "title": '<%= t(".associations") %>',
+                "type": "array",
+                // "required": true,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "association":{
+                      "title": '<%= t(".associations") %>',
+                      "required": true
+                    },
+                    "associations":{
+                      "type":"array"
+                    }
+
+                  }
+                },
+                // "minItems": 2,
+                // "maxItems": 1
+              }
+
+
+        }
+    },
+    "options":{
+      "focus":"",
+      "hideInitValidationError":true,
+      "fields":{
+            "class_name":{
+              "type": "select",
+              "optionLabels": class_labels,
+              "onFieldChange": function(e) {
+                $.getJSON( "<%= attributes_constructor_index_path %>", { class_name: this.getValue()} )
+                  .done(function( json ) {
+                    var al = $("#main-form").alpaca('get').getControlByPath('attributes');
+                    al.schema.enum = json.attributes;
+                    al.options.optionLabels = json.types;
+                    al.setValue('');
+                    al.refresh();
+
+                    var al = $("#main-form").alpaca('get').getControlByPath('associations');
+                    // console.log(json.associations);
+                    al.schema.items.properties.association.enum = json.associations;
+                    al.options.items.fields.association.optionLabels = json.associations_labels;
+                    while(al.children.length != 0){
+                      al.removeItem(0);
+                    }
+                    al.refresh();
+                  });
+              }
+            },
+            "attributes":{
+              "type": "chooser"
+            },
+            "associations":{
+              "type": "array",
+              "toolbar":{
+                "actions":[{
+                  "action": "add",
+                  "enabled": true,
+                  "click": function(key,action,index){
+                    this.handleToolBarAddItemClick(function(item) {
+                        item.children[0].getControlEl().trigger('change');
+                    });
+                  }
+                }]
+              },
+              "actionbar": {
+                "actions": [{
+                    "action": "up",
+                    "enabled": false
+                  },
+                  {
+                    "action": "down",
+                    "enabled": false,
+                  },
+                  {
+                    "action": "add",
+                    "enabled": true,
+                    "click": function(key,action,index){
+                      // console.log(key);
+                      // console.log(action);
+
+                      this.handleActionBarAddItemClick(null, function(item) {
+                        item.children[0].getControlEl().trigger('change');
+                        // console.log(item);
+                        apply_select();
+                      });
+                    }
+
+                  }
+
+
+                ]
+              },
+              "items": {
+                "fields":{
+                  "association":{
+                    "type": "select",
+                    "onFieldChange": function(e) {
+                      console.log(this.parent.children[1].removeItem);
+
+                      var al = this.parent.children[1];
+                      var main_form = $("#main-form").alpaca('get');
+                      var name = this.name;
+                      var array = name.split('_').slice(0,-1);
+                      var assocs = '';
+                      var res = [];
+                      var elem = this;
+                      for(var i in array){
+                        if (i == 0){
+                          res[0] = main_form.getControlByPath('class_name').getValue();
+                          assocs += 'associations';
+                          continue;
+                        }
+                        if(array[i] == 'associations'){
+                          res.push(main_form.getControlByPath(assocs + 'association').getValue());
+                          // // res.push(main_form.getControlByPath(assocs + 'association').getValue());
+                          //
+                          // console.log('----');
+                          // console.log(main_form.getControlByPath(assocs + 'association').name);
+                          // console.log(main_form.getControlByPath(assocs + 'association').schema.enum);
+                          // console.log(main_form.getControlByPath(assocs + 'association').options.optionLabels);
+                          // console.log(main_form.getControlByPath(assocs + 'association').getValue());
+                          // console.log('----');
+                          //
+                          assocs += 'associations';
+                        }
+                        else{
+                          assocs += '[' + array[i] +   ']/';
+                        }
+                      }
+                      // console.log(res);
+                      while(al.children.length != 0){
+                        // console.log(al.children[0]);
+                        al.removeItem(0);
+                      }
+
+                      $.getJSON( "<%= nested_associations_constructor_index_path %>",
+                      {
+                        assocs: res
+                      }).done(function( json ) {
+                          elem.schema.enum = json.associations;
+                          elem.options.optionLabels = json.associations_labels;
+                          console.log(e);
+                          // elem.setValue(elem.schema.enum[0]);
+                          elem.refresh();
+                          apply_select();
+
+                          $.getJSON( "<%= nested_attributes_constructor_index_path %>",
+                          {
+                            assocs: res
+                          }).done(function( json ) {
+                              res.push(elem.getValue());
+                              var al = $("#main-form").alpaca('get').getControlByPath('attributes');
+                              var str = res.join('.');
+                              attributes = json.attributes;
+                              attributes_labels = json.attributes_labels;
+
+                              attributes.forEach(function(part, index, theArray) {
+                                theArray[index] = str + '.' + theArray[index];
+                              });
+
+                              attributes_labels.forEach(function(part, index, theArray) {
+                                theArray[index] = str + '.' + theArray[index];
+                              });
+
+
+                              al.schema.enum = al.schema.enum.concat(json.attributes);
+                              al.options.optionLabels = al.options.optionLabels.concat(json.attributes_labels);
+                              // al.setValue('');
+                              al.refresh();
+                              var to = elem.parent.children[1];
+                              var al = $("#main-form").alpaca('get')
+                                                      .getControlByPath('associations');
+                              to.schema =  jQuery.extend(true, {}, al.schema);
+                              to.options = jQuery.extend(true, {}, al.options);
+                              to.refresh();
+                            });
+
+                        });
+
+
+
+
+
+                    }
+                  }
+                }
+
+              }
+
+            }
+
+      },
+      "form": {
+            "attributes": {
+                "method": "post",
+                "action": "action"
+            },
+            "buttons": {
+                "submit": {
+                    "title": '<%= t(".build") %>',
+                    "click": function() {
+                       this.validate(true);
+                       this.refreshValidationState(true);
+                       if (!this.isValid(true)) {
+                           return;
+                       }
+                    }
+                }
+        }
+    },
+    "view": {
+        "layout": {
+            "template": "<%=j render partial: 'form_layout' %>",
+            "bindings": {
+                "class_name": "column-1",
+                "associations": "column-1",
+                "attributes" : "column-2"
+            }
+        }
+    }
+
+  },
+  "postRender": function(control) {
+    apply_select();
+     $("#main-form").alpaca('get').getControlByPath('class_name').getControlEl().trigger('change');
+
+}});

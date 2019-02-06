@@ -145,6 +145,12 @@ PATH
       slim
 
 PATH
+  remote: engines/reports
+  specs:
+    reports (0.0.1)
+      rails (~> 4.2.11)
+
+PATH
   remote: engines/sessions
   specs:
     sessions (0.0.1)
@@ -666,6 +672,7 @@ DEPENDENCIES
   rails_db
   rails_email_preview (~> 2.0.6)
   rake
+  reports!
   responders (~> 2.0)
   rollbar
   rspec-rails
