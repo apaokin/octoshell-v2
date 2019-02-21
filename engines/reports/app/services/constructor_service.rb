@@ -9,26 +9,14 @@ module Reports
       [columns.keys, types]
     end
 
-    def self.associations_with_type(array)
+    def self.class_info(array)
       cl = eval(array.first)
       array = array.drop(1)
       array.each do |elem|
         cl = cl.reflect_on_association(elem).klass
       end
-      model_associations_with_type(cl)
+      model_associations_with_type(cl) + attributes_with_type(cl)
     end
-
-    def self.array_attributes_with_type(array)
-      cl = eval(array.first)
-      array = array.drop(1)
-      array.each do |elem|
-        cl = cl.reflect_on_association(elem).klass
-      end
-      attributes_with_type(cl)
-    end
-
-
-
 
     def self.model_associations_with_type(model)
       reflections = model.reflections.values

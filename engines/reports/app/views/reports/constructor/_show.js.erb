@@ -1,6 +1,166 @@
 <% @alpaca_raw_json.each do |key, value| %>
   var <%= key %> =  <%= raw value.to_json %>;
 <% end %>
+
+function checkbox_changed(e){
+  var array = this.parent.path.split('/');
+  array.splice(0,2);
+
+  var value = e.target.attributes[2].nodeValue;
+
+  var label = this.domEl.find("input[data-checkbox-value='"+value+"']").parent().text();
+  // console.log(e.target);
+  if(array.length > 0){
+    label = array.join('.') + '.' + label;
+  }
+  if(array.length > 0){
+    value = array.join('.') + '.' + value;
+  }
+
+  var attributes_element = $("#main-form").alpaca('get').getControlByPath('attributes');
+
+  attributes_element.resolveItemSchemaOptions(function(itemSchema, itemOptions, circular) {
+      var insertionPoint = attributes_element.children.length;
+      var itemData = Alpaca.createEmptyDataInstance(itemSchema);
+      itemData['label'] = value;
+      var copiedOptions = jQuery.extend(true,{}, itemOptions);
+      copiedOptions.fields.order.label = label;
+      attributes_element.addItem(insertionPoint, itemSchema, copiedOptions, itemData, function(item) {
+
+      });
+  });
+}
+
+function new_association(e){
+  // console.log('wwww');
+  var self = this;
+  var class_name = $("#main-form").alpaca('get')
+                  .getControlByPath('class_name').getValue();
+  var path = this.path.split('/');
+  path[0] = class_name;
+  path.splice(1, 1);
+  path[path.length-1] = this.getValue();
+  // console.log(self);
+  // console.log(self.parent.children.length);
+  // console.log(self.parent.parent.children.length);
+  // console.log(self.parent.childrenByPropertyId.keys);
+  // if(self.parent.children.length == 1)
+    $.ajax({
+      dataType: "json",
+      url: "<%= class_info_constructor_index_path %>",
+      success: function( json ) {
+          self.assocs = {};
+          self.assocs.enum = json.associations;
+          self.assocs.optionLabels = json.associations_labels;
+          self.assocs.attributes = json.attributes;
+          self.assocs.labels = json.types;
+      },
+      async: false,
+      data: {
+        assocs: path
+      }
+    });
+  if(self.parent.childrenByPropertyId[this.getValue()]){
+    alert('selected');
+    return;
+  }
+  // console.log(self);
+  // var index = this.schema.enum.indexOf(this.getValue());
+  // if children
+  // this.schema.enum.splice(index,1);
+  // this.options.optionLabels.splice(index,1);
+  var schema = {
+    "title": this.getValue(),
+    "type": "object",
+    "properties":{
+      "join":{
+        "type": "radio",
+        "title": '<%= t(".join_type") %>',
+        "enum": ['inner', 'left'],
+        "required": true,
+      },
+      "all_attributes": {
+        "type": "array",
+        "title": '<%= t(".choose_attributes") %>',
+        "enum": self.assocs.attributes
+
+      },
+      "list":{
+        "title": '<%= t(".link") %>',
+        "enum": self.assocs.enum,
+        // "required": true
+      }
+    }
+  };
+  var options = {
+    "type": "object",
+    "fields":{
+      "join":{
+        "optionLabels": ['<%= t(".inner_join") %>', '<%= t(".left_join") %>']
+      },
+      "all_attributes": {
+        "type": "checkbox",
+        "optionLabels": self.assocs.labels,
+        "onFieldChange": checkbox_changed
+      },
+      "list":{
+        "type": "select",
+        "optionLabels": self.assocs.optionLabels,
+        "onFieldChange": new_association
+      }
+    }
+  };
+
+  var data = {
+    "join": "inner"
+  }
+
+  this.parent.addItem(this.getValue(), schema, options,
+  data, this.parent.children[self.parent.children.length -1].getId(), function(item) {
+    var last_index = self.parent.children.length -1;
+    // if(self.parent.children.length == 2){
+      var last = self.parent.children[last_index].containerItemEl;
+      var first = self.parent.children[last_index-1].containerItemEl;
+      first.after(last);
+      self.setValue(null);
+      self.refresh();
+      apply_select();
+      // $('<p>ddddddwadwadwadawdwad</p>').before(self.parent.children[0].containerItemEl);
+      var button = $('<button> <%= t(".delete")%> </button>');
+      var cur_elem = self.parent.children[self.parent.children.length -1];
+      button.click(function(){
+        // console.log(cur_elem.schema.title);
+        // console.log()
+        var array = cur_elem.path.split('/');
+        array.splice(0,2);
+        console.log(array);
+        var begin = array.join('.');
+        // console.log(array);
+        var attributes_element = $("#main-form").alpaca('get').getControlByPath('attributes');
+        attributes_element.children = attributes_element.children.filter(word => !word.getValue().label.startsWith(begin));
+        attributes_element.refresh();
+
+        // for(var i in attributes_element.children){
+        //   var el = attributes_element.children[i];
+        //   var value = el.getValue().label;
+        //   console.log(value);
+        //   console.log(begin);
+        //   console.log(value.startsWith(begin));
+        // }
+        self.parent.removeItem(cur_elem.propertyId);
+      });
+      // if(self.parent.parent.path == "/")
+        self.parent.children[self.parent.children.length -1].children[0].domEl.prepend(button);
+      // var last.
+
+    // }
+  });
+
+
+
+}
+
+
 $("#main-form").alpaca({
     "data": {
     },
@@ -12,30 +172,39 @@ $("#main-form").alpaca({
                 "enum": class_options,
                 "required": true
               },
+              "all_attributes":{
+                "type": "array",
+                "title": '<%= t(".choose attributes") %>'
+              },
               "attributes":{
                 "title": '<%= t(".associations") %>',
-                "type":'string',
-                "required": true
-              },
-              "associations":{
-                "title": '<%= t(".associations") %>',
+                "required": true,
                 "type": "array",
                 // "required": true,
                 "items": {
                   "type": "object",
                   "properties": {
-                    "association":{
-                      "title": '<%= t(".associations") %>',
-                      "required": true
+                    "label":{
+                      "hidden": true
                     },
-                    "associations":{
-                      "type":"array"
-                    }
-
+                    "order":{
+                      "enum": ["ASC", "DESC", "GROUP"]
+                      // "title": '<%= t(".associations") %>',
+                      // "required": true
+                    },
                   }
-                },
-                // "minItems": 2,
-                // "maxItems": 1
+                }
+
+              },
+              "association":{
+                "type": "object",
+                "properties":{
+                  "list":{
+                    "title": '<%= t(".link") %>',
+                    // "enum": class_options,
+                    // "required": true
+                  }
+                }
               }
 
 
@@ -49,164 +218,89 @@ $("#main-form").alpaca({
               "type": "select",
               "optionLabels": class_labels,
               "onFieldChange": function(e) {
-                $.getJSON( "<%= attributes_constructor_index_path %>", { class_name: this.getValue()} )
+                var self = this;
+                $.getJSON( "<%= class_info_constructor_index_path %>", { assocs: [this.getValue()]} )
                   .done(function( json ) {
-                    var al = $("#main-form").alpaca('get').getControlByPath('attributes');
+                    var al = $("#main-form").alpaca('get').getControlByPath('all_attributes');
+
                     al.schema.enum = json.attributes;
                     al.options.optionLabels = json.types;
-                    al.setValue('');
+                    // al.setValue('');
                     al.refresh();
-
-                    var al = $("#main-form").alpaca('get').getControlByPath('associations');
-                    // console.log(json.associations);
-                    al.schema.items.properties.association.enum = json.associations;
-                    al.options.items.fields.association.optionLabels = json.associations_labels;
-                    while(al.children.length != 0){
-                      al.removeItem(0);
+                    var al = $("#main-form").alpaca('get').getControlByPath('association');
+                    var schema = {
+                      "type": "object"
+                    };
+                    var options = {
+                      "type": "object",
                     }
-                    al.refresh();
+                    al.children[0].schema.enum = json.associations;
+                    al.children[0].options.optionLabels = json.associations_labels;
+                    while(al.children.length > 1){
+                      al.removeItem(al.children[1].propertyId);
+                    }
+                    al.children[0].setValue('');
+                    al.children[0].refresh();
+                    apply_select();
+                    // al.addItem(self.getValue(), schema, options, null, al.children[0].getId(), function(item) {
+                    //   apply_select();
+                    //   var last = al.children[al.children.length-1].containerItemEl;
+                    //   var first = al.children[al.children.length - 2].containerItemEl;
+                    //   first.after(last);
+                    // });
                   });
               }
             },
-            "attributes":{
-              "type": "chooser"
+            "all_attributes":{
+              "type": "checkbox",
+              "onFieldChange": checkbox_changed
             },
-            "associations":{
+            "attributes":{
               "type": "array",
               "toolbar":{
                 "actions":[{
                   "action": "add",
-                  "enabled": true,
-                  "click": function(key,action,index){
+                  "enabled": false,
+                  "click": function(){
                     this.handleToolBarAddItemClick(function(item) {
-                        item.children[0].getControlEl().trigger('change');
+                      // load_data_for_select( item.children[0], true);
+                        //
+                        // item.children[0].getControlEl().trigger('change');
                     });
+
                   }
                 }]
               },
               "actionbar": {
                 "actions": [{
-                    "action": "up",
-                    "enabled": false
-                  },
-                  {
-                    "action": "down",
-                    "enabled": false,
-                  },
-                  {
-                    "action": "add",
-                    "enabled": true,
-                    "click": function(key,action,index){
-                      // console.log(key);
-                      // console.log(action);
-
-                      this.handleActionBarAddItemClick(null, function(item) {
-                        item.children[0].getControlEl().trigger('change');
-                        // console.log(item);
-                        apply_select();
-                      });
-                    }
-
-                  }
-
-
+                              "action": "add",
+                              "enabled": false
+                            }
                 ]
               },
               "items": {
                 "fields":{
-                  "association":{
-                    "type": "select",
-                    "onFieldChange": function(e) {
-                      console.log(this.parent.children[1].removeItem);
-
-                      var al = this.parent.children[1];
-                      var main_form = $("#main-form").alpaca('get');
-                      var name = this.name;
-                      var array = name.split('_').slice(0,-1);
-                      var assocs = '';
-                      var res = [];
-                      var elem = this;
-                      for(var i in array){
-                        if (i == 0){
-                          res[0] = main_form.getControlByPath('class_name').getValue();
-                          assocs += 'associations';
-                          continue;
-                        }
-                        if(array[i] == 'associations'){
-                          res.push(main_form.getControlByPath(assocs + 'association').getValue());
-                          // // res.push(main_form.getControlByPath(assocs + 'association').getValue());
-                          //
-                          // console.log('----');
-                          // console.log(main_form.getControlByPath(assocs + 'association').name);
-                          // console.log(main_form.getControlByPath(assocs + 'association').schema.enum);
-                          // console.log(main_form.getControlByPath(assocs + 'association').options.optionLabels);
-                          // console.log(main_form.getControlByPath(assocs + 'association').getValue());
-                          // console.log('----');
-                          //
-                          assocs += 'associations';
-                        }
-                        else{
-                          assocs += '[' + array[i] +   ']/';
-                        }
-                      }
-                      // console.log(res);
-                      while(al.children.length != 0){
-                        // console.log(al.children[0]);
-                        al.removeItem(0);
-                      }
-
-                      $.getJSON( "<%= nested_associations_constructor_index_path %>",
-                      {
-                        assocs: res
-                      }).done(function( json ) {
-                          elem.schema.enum = json.associations;
-                          elem.options.optionLabels = json.associations_labels;
-                          console.log(e);
-                          // elem.setValue(elem.schema.enum[0]);
-                          elem.refresh();
-                          apply_select();
-
-                          $.getJSON( "<%= nested_attributes_constructor_index_path %>",
-                          {
-                            assocs: res
-                          }).done(function( json ) {
-                              res.push(elem.getValue());
-                              var al = $("#main-form").alpaca('get').getControlByPath('attributes');
-                              var str = res.join('.');
-                              attributes = json.attributes;
-                              attributes_labels = json.attributes_labels;
-
-                              attributes.forEach(function(part, index, theArray) {
-                                theArray[index] = str + '.' + theArray[index];
-                              });
-
-                              attributes_labels.forEach(function(part, index, theArray) {
-                                theArray[index] = str + '.' + theArray[index];
-                              });
+                  "order": {
+                    "vertical": false,
+                    "type": "checkbox"
 
 
-                              al.schema.enum = al.schema.enum.concat(json.attributes);
-                              al.options.optionLabels = al.options.optionLabels.concat(json.attributes_labels);
-                              // al.setValue('');
-                              al.refresh();
-                              var to = elem.parent.children[1];
-                              var al = $("#main-form").alpaca('get')
-                                                      .getControlByPath('associations');
-                              to.schema =  jQuery.extend(true, {}, al.schema);
-                              to.options = jQuery.extend(true, {}, al.options);
-                              to.refresh();
-                            });
-
-                        });
-
-
-
-
-
-                    }
-                  }
+                   // "type": "select",
+                   // "onFieldChange": function(e) {
+                   //  load_data_for_select(this, false);
+                   //
+                   // }
+                 }
                 }
-
+              }
+            },
+            "association":{
+              "type": "object",
+              "fields":{
+                "list":{
+                  "type": "select",
+                  "onFieldChange": new_association
+                }
               }
 
             }
@@ -235,7 +329,8 @@ $("#main-form").alpaca({
             "template": "<%=j render partial: 'form_layout' %>",
             "bindings": {
                 "class_name": "column-1",
-                "associations": "column-1",
+                "all_attributes": "column-1",
+                "association": "column-1",
                 "attributes" : "column-2"
             }
         }
@@ -244,6 +339,8 @@ $("#main-form").alpaca({
   },
   "postRender": function(control) {
     apply_select();
-     $("#main-form").alpaca('get').getControlByPath('class_name').getControlEl().trigger('change');
+    $("#main-form").alpaca('get').getControlByPath('class_name').setValue('Core::Cluster');
+    $("#main-form").alpaca('get').getControlByPath('class_name').getControlEl().trigger('change');
+
 
 }});

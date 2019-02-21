@@ -1,5 +1,7 @@
 div class="page-header"
   h1 = t(".title")
+div.col-xs-6#test-div style="word-break:break-all;"
+  /= Array.new(20, 'cccccccc').join('.')
 div#main-form
 =javascript_tag do
   = render partial: 'show',formats: :js

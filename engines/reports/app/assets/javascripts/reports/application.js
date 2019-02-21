@@ -11,3 +11,12 @@
 // about supported directives.
 //
 //= require_tree .
+function getJSONSync(url,success)
+{
+  $.ajax({
+    dataType: "json",
+    url: url,
+    success: success,
+    async: false
+  });
+}

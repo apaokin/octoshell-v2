@@ -13,3 +13,7 @@
  *= require_tree .
  *= require_self
  */
+
+.chooser-item-text {
+		word-break:break-all;
+}
