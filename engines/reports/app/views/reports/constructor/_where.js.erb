@@ -1,0 +1,129 @@
+function init_where(){
+  all_attributes = {
+    items: [],
+    alpaca: $("#main-form").alpaca('get').getControlByPath('where'),
+    append: function(enums, labels){
+     for(var i in enums){
+       this.items.push({
+         enum: enums[i],
+         label: labels[i],
+         type: labels[i].split('|').slice(-1)[0]
+       });
+     }
+     // this.alpaca.addItem(propertyId, itemSchema, itemOptions, itemData, insertAfterId, callback){
+     //
+     // }
+    },
+    remove: function(begin){
+    },
+    init: function(){
+      var self = this;
+      var propertyId = "field-" + new Date().getTime();
+      var button = $('<button> <%= t(".add_where")%> </button>');
+      button.click(function(){
+        var itemData = {
+
+        };
+        var itemSchema = {
+          "type": "object",
+          "properties":{
+            "all_attributes":{
+              "type": "select",
+              // "enum": self.items.map(a => a.enum)
+            },
+            "attribute_type":{
+              "hidden": true
+            }
+          }
+        };
+        var itemOptions = {
+          "type": "object",
+          "fields":{
+            "all_attributes":{
+              "type": "select",
+              // "optionLabels": self.items.map(a => a.label),
+              "onFieldChange": function(){
+                var value  = this.domEl.find('select').select2('val');
+                var obj = self.items.find(function(element){
+                  return element.enum == value;
+                });
+                this.parent.childrenByPropertyId['attribute_type'].setValue(obj.type);
+
+                var my_ops_key = Object.keys(ops).find(function(element){
+                  return element.includes(obj.type);
+                });
+                var my_ops = ops[my_ops_key];
+                enums = []
+                for(var i in my_ops){
+                  Object.keys(my_ops).forEach(function(key){
+                    enums = enums.concat(my_ops[key]);
+                  });
+                }
+
+                var schema = {
+                  "type": "select",
+                  "title": '<%= t("select_operation") %>',
+                  "enum" : enums
+                };
+
+                var options = {
+                  "type": "select",
+                  "onFieldChange": function(){
+                    // var value  = this.domEl.find('select').select2('val');
+                    var value  = this.data[0].text;
+                    var type;
+                    for(var i in my_ops){
+                      console.log(my_ops[i]);
+                      if(my_ops[i].includes(value)){
+                        type = i;
+                        break;
+                      }
+                    }
+                    if(i == 'binary_operators')
+                    {
+
+
+
+                      var insertAfterId = this.parent.childrenByPropertyId.operation.getId();
+                      this.parent.addItem('second_operand',schema,options, null, insertAfterId, function(){
+                        apply_select();
+                      });
+                    }
+
+                  }
+                };
+                var insertAfterId = this.parent.childrenByPropertyId.attribute_type.getId();
+
+                this.parent.addItem('operation',schema,options, null, insertAfterId, function(){
+                  apply_select();
+                });
+              }
+            }
+          }
+        };
+        var insertAfterId = null;//all_attributes.alpaca.children.slice(-1)[0].getId();
+
+        self.alpaca.addItem(propertyId, itemSchema, itemOptions, itemData, insertAfterId, null);
+        apply_select();
+
+      });
+      // if(self.parent.parent.path == "/")
+      self.alpaca.domEl.find('div.alpaca-container').prepend(button);
+      button.trigger('click');
+    },
+    change: function(){
+      var self = this;
+      for(var i in self.alpaca.children){
+        for(var j in self.alpaca.children[i].children){
+          var al = self.alpaca.children[i].children[j];
+          if(al.propertyId == 'all_attributes'){
+            al.schema.enum = self.items.map(a => a.enum);
+            al.options.optionLabels = self.items.map(a => a.label);
+            al.refresh();
+          }
+
+        }
+      }
+    }
+  }
+}

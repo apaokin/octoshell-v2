@@ -3,5 +3,7 @@ div class="page-header"
 div.col-xs-6#test-div style="word-break:break-all;"
   /= Array.new(20, 'cccccccc').join('.')
 div#main-form
+= render partial: 'views'
 =javascript_tag do
+  = render partial: 'where',formats: :js
   = render partial: 'show',formats: :js

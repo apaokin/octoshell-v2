@@ -5,7 +5,8 @@ module Reports
     def show
       @alpaca_raw_json = {
         class_options: ModelsList.to_a,
-        class_labels: ModelsList.to_a_labels
+        class_labels: ModelsList.to_a_labels,
+        ops: ConstructorService.where
       }
 
       # @models = Reports::ConstructorService.to_a_labels
@@ -21,6 +22,15 @@ module Reports
                      associations: associations,
                      associations_labels: associations_labels }
     end
+
+    def csv
+      send_data(your_data,
+        :filename => "client-suggested-filename",
+        :type => "mime/type")
+
+      format.csv { send_data @users.to_csv, filename: "users-#{Date.today}.csv" }
+    end
+
 
     # def nested_associations
     #   assocs = params[:assocs]

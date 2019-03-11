@@ -3,6 +3,7 @@ Reports::Engine.routes.draw do
 	resources :constructor, only: %i[show] do
 		collection do
 			get :class_info
+			post :csv
 		end
 	end
 end
