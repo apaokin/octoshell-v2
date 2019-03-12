@@ -15,7 +15,7 @@ module Reports
         binary_operators: ['>', '=', '<', '>=', '<=']
       },
       %i[string text] => {
-        binary_operators: ['=']
+        binary_operators: ['=', 'LIKE']
       }
     }.freeze
 
