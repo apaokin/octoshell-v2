@@ -1,26 +1,80 @@
 function init_where(){
-  all_attributes = {
+  where_container = {
     items: [],
     alpaca: $("#main-form").alpaca('get').getControlByPath('where'),
-    append: function(enums, labels){
+    assign: function(enums,labels){
+      this.items = [];
+      for(var i in enums){
+        this.items[i] = {
+          enum: enums[i],
+          label:labels[i],
+          type: labels[i].split('|').slice(-1)[0]
+        };
+      }
+    },
+    append: function(enums, labels, prefix_array = []){
+     var prefix = prefix_array.splice(1, prefix_array.length -1 ).join('.');
+     if(prefix != ''){
+       prefix = prefix.concat('.');
+     }
      for(var i in enums){
        this.items.push({
-         enum: enums[i],
-         label: labels[i],
+         enum: prefix.concat(enums[i]),
+         label: prefix.concat(labels[i]),
          type: labels[i].split('|').slice(-1)[0]
        });
      }
+     // console.log(this.items);
+
      // this.alpaca.addItem(propertyId, itemSchema, itemOptions, itemData, insertAfterId, callback){
      //
      // }
     },
+    get_items: function(){
+      return this.items;
+    },
     remove: function(begin){
+      // for(var i in this.alpaca.children){
+      //   var elem = this.alpaca.children[i];
+      //   console.log(elem.getValue());
+      // }
+
+      this.alpaca.children = this.alpaca.children.filter(word => (word.getValue() == {} ||
+        (word.getValue().all_attributes && !word.getValue().all_attributes.startsWith(begin))));
+      this.alpaca.refresh();
+      this.init();
+      // console.log(this.alpaca.children);
+      // this.change();
+      // self.alpaca.domEl.find('div.alpaca-container').prepend(button);
+
+      // this.alpaca.refresh();
+      // for(var i in this.alpaca.children){
+      //   var elem = this.alpaca.children[i];
+      //   elem.refresh();
+      //   // console.log(elem.getValue());
+      // }
+
+      // for(var i in this.alpaca.children){
+      //   var elem = this.alpaca.children[i];
+      //   elem.childrenByPropertyId('all_children')
+      //   for(var j in this.alpaca.children){
+      //
+      //   }
+      //
+      // }
+      // this.change();
     },
     init: function(){
       var self = this;
       var propertyId = "field-" + new Date().getTime();
       var button = $('<button> <%= t(".add_where")%> </button>');
-      button.click(function(){
+      // console.log(this.items);
+
+      button.click(function(e){
+        // console.log(self.items);
+        // console.log(self.get_items());
+
+        // e.preventDefault();
         var itemData = {
 
         };
@@ -70,7 +124,7 @@ function init_where(){
                   "type": "select",
                   "onFieldChange": function(){
                     // var value  = this.domEl.find('select').select2('val');
-                    var value  = this.data[0].text;
+                    var value  = this.getValue();
                     var type;
                     for(var i in my_ops){
                       console.log(my_ops[i]);
@@ -103,13 +157,15 @@ function init_where(){
         };
         var insertAfterId = null;//all_attributes.alpaca.children.slice(-1)[0].getId();
 
-        self.alpaca.addItem(propertyId, itemSchema, itemOptions, itemData, insertAfterId, null);
-        apply_select();
-
+        self.alpaca.addItem(propertyId, itemSchema, itemOptions, itemData, insertAfterId, function(){
+          self.change();
+          apply_select();
+        });
+        return false;
       });
       // if(self.parent.parent.path == "/")
       self.alpaca.domEl.find('div.alpaca-container').prepend(button);
-      button.trigger('click');
+      // button.trigger('click');
     },
     change: function(){
       var self = this;
