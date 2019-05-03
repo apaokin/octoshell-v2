@@ -64,17 +64,40 @@ module Reports
 
     end
     it "queries with joins" do
+      # country = create(:country, title_en: 'Germany')
+      # create(:city, title_en: 'Hamburg', country: country)
+      # create(:city, title_en: 'Frankfurt', country: country)
+
       hash = {"class_name"=>"Core::City", "attributes"=>{"0"=>{
         "value"=>"title_ru", "label"=>"title_ru|string"}, "1"=>{
           "value"=>"organizations.projects.title",
           "label"=>"organizations.projects.title|string"}},
           "association"=>{"organizations"=>{"join_type"=>"inner",
             "projects"=>{"join_type"=>"left"}}}}
-          ConstructorService.new(hash).to_a
+
+      puts ConstructorService.new(hash).to_a
             # expect(ConstructorService.new(hash).to_a).to eq [{"country_id"=>country.id, "count_id"=>2},
             #   {"country_id"=>1, "count_id"=>1}]
 
     end
+
+    it "group by with assocations" do
+      org1 = create(:organization, name: 'org1')
+      org2 = create(:organization, name: 'org2')
+      create(:organization_department, organization: org1)
+      create(:organization_department, organization: org1)
+      create(:organization_department, organization: org2)
+      create(:organization_department, organization: org2)
+      create(:organization_department, organization: org2)
+
+      hash = {"class_name"=>"Core::Organization", "attributes"=>{"0"=>{"value"=>"name", "label"=>"name|string", "order"=>["GROUP"]},
+              "1"=>{"value"=>"departments.id", "label"=>"departments.id|integer", "aggregate"=>"COUNT"}},
+              "association"=>{"list"=>"departments", "departments"=>{"join_type"=>"inner"}}}
+      puts ConstructorService.new(hash).to_sql
+      puts ConstructorService.new(hash).to_a
+    end
+
+
 
     it "#where" do
       puts ConstructorService.where

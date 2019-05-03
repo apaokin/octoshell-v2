@@ -217,9 +217,9 @@ $("#main-form").alpaca({
                       "enum": aggregate
                     },
                     "order":{
-                      "enum": ["ASC", "DESC", "GROUP"]
+                      "type": "array",
+                      "enum": ["ASC", "DESC", "GROUP"],
                       // "title": '<%= t(".associations") %>',
-                      // "required": true
                     },
 
                   }
@@ -334,15 +334,7 @@ $("#main-form").alpaca({
                     "type": "select"
                   },
                   "order": {
-                    "type": "checkbox",
-                    "view": {
-                      "layout": "horizontal"
-                    }
-                   // "type": "select",
-                   // "onFieldChange": function(e) {
-                   //  load_data_for_select(this, false);
-                   //
-                   // }
+                    "type": "checkbox"
                  },
                  "label":{
                    "disabled": true
@@ -377,6 +369,7 @@ $("#main-form").alpaca({
                       // console.log(this);
 
                       var params = this.getValue();
+                      console.log(params);
                       var associations = {};
                       var path = [];
                       // var func = function(elem,path){

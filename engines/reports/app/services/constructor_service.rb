@@ -15,7 +15,8 @@ module Reports
         binary_operators: ['>', '=', '<', '>=', '<=']
       },
       %i[string text] => {
-        binary_operators: ['=', 'LIKE']
+        binary_operators: ['=']
+
       }
     }.freeze
 
@@ -68,8 +69,15 @@ module Reports
       [enums, types]
     end
 
-    def value(hash)
-      # array = value.sp
+    def find(root, hash, path)
+      return root if Array(path).empty?
+
+      keys = hash.keys
+
+      cur_assoc = path.delete_at(0)
+      index = keys.map(&:to_s).index(cur_assoc)
+      raise "error" unless index
+      find(root.children[index], hash[cur_assoc.to_sym], path)
     end
 
     def put_select(hash)
@@ -79,11 +87,10 @@ module Reports
         value = v['value']
         if v['aggregate']
           attribute = "#{v['aggregate']}_#{value}"
-          @attribute_names << attribute
-          puts attribute
-          @in_select << "#{v['aggregate']}(#{value}) AS #{attribute}"
+          new_attribute = attribute.gsub('.', '_')
+          @attribute_names << new_attribute
+          @in_select << "#{v['aggregate']}(#{value}) AS #{new_attribute}"
         else
-          puts value.inspect.blue
           @attribute_names << value
           @in_select << value
         end
@@ -92,16 +99,29 @@ module Reports
 
     def put_order(hash)
       order_array = hash['attributes'].values.select do |v|
-        v['order'] == 'ASC' || v['order'] == 'DESC'
-      end.map { |v| [v['value'], v['order']] }
+        order = Array(v['order'])
+        order.include?('ASC') || order.include?('DESC')
+      end.map do |v|
+        order = Array(v['order'])
+        val = order.select { |elem| elem  == 'ASC' || elem  == 'DESC'}
+        raise "error" if val.count == 2
+        [v['value'], val.first]
+      end
       @order = Hash[order_array]
     end
 
     def put_group(hash)
       @group = hash['attributes'].values.select do |v|
-        v['order'] == 'GROUP'
+        Array(v['order']).include?('GROUP')
       end.map { |v| v['value'] }
     end
+
+    def put_where(hash)
+      @where = hash['where'].values.select do |v|
+        # Array(v['order']).include?('GROUP')
+      end.map { |v| v['value'] }
+    end
+
 
 
     #Два случая: 1) лист оказался лефт, всё лефт. Есть  вершина с иннер, до неё ещё иннер 2) Если иннер джоин, всё иннер
@@ -144,17 +164,15 @@ module Reports
     end
 
     def split_joins_inside(inner, left, hash)
-      puts hash.inspect.red
+      # puts hash.inspect.red
+      hash.delete('list')
       hash.each do |key, value|
-        puts "#{key.inspect}->#{value.inspect}".green
         next if key == 'join_type'
         type = value['join_type']
         if type == 'inner' && inner
           inner[key.to_sym] = {}
         end
         left[key.to_sym] = {}
-        puts inner.inspect.yellow
-        puts left.inspect.yellow
         split_joins_inside(inner[key.to_sym], left[key.to_sym], value)
       end
     end
@@ -164,29 +182,54 @@ module Reports
       hash = deep_copy(old_hash)
       self.class.convert_left_to_inner(hash)
       split_joins(hash)
-      puts @inner_join
-      puts @left_join
     end
 
     # {a: :b, c: :e, d: {f: [:e,:g]}}
 
-
     def initialize(hash)
+      hash = deep_copy(hash)
       @activerecord_class = eval(hash['class_name'])
       if hash['attributes']
         @inner_join = {}
         @left_join = {}
+        @alias_to_output = {}
+        put_assocation(hash['association'])
+
+        join_dependency = ActiveRecord::Associations::JoinDependency.new(
+          @activerecord_class,
+          @left_join,
+          []
+        )
+        hash['attributes'].values.each do |v|
+          value = v['value']
+          path = value.split('.')[0..-2]
+          if path.any?
+            table = find(join_dependency.join_root, @left_join, path).instance_variable_get("@tables").first
+            prefix = table.is_a?(Arel::Nodes::TableAlias) ? table.instance_variable_get("@right") : table.instance_variable_get("@name")
+            v['value'] = "#{prefix}.#{value.split('.').last}"
+            @alias_to_output[prefix] = path
+          end
+        end
+
         put_select(hash)
         put_order(hash)
         put_group(hash)
-        put_assocation(hash['association'])
       end
     end
-    def to_a
-      # puts @activerecord_class.select(*@in_select).order(@order).to_sql
+
+    def form_relation
       @activerecord_class.select(*@in_select).order(@order).group(@group)
                          .joins(@inner_join).left_join(@left_join)
-                         .to_a.map do |e|
+    end
+
+    def to_sql
+      form_relation.to_sql
+    end
+
+
+    def to_a
+      form_relation.to_a.map do |e|
+        # e.attributes
         Hash[@attribute_names.map do |s|
           [s.downcase, e[s.downcase]]
         end]

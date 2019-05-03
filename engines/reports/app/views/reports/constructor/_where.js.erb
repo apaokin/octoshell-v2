@@ -67,6 +67,8 @@ function init_where(){
     init: function(){
       var self = this;
       var propertyId = "field-" + new Date().getTime();
+      self.alpaca.addItem('propertyId', {}, {hidden:true },{}, null);
+
       var button = $('<button> <%= t(".add_where")%> </button>');
       // console.log(this.items);
 
@@ -97,22 +99,24 @@ function init_where(){
               "type": "select",
               // "optionLabels": self.items.map(a => a.label),
               "onFieldChange": function(){
-                var value  = this.domEl.find('select').select2('val');
+                // var value  = this.domEl.find('select').select2('val');
+                var value  = this.getValue();
                 var obj = self.items.find(function(element){
                   return element.enum == value;
                 });
                 this.parent.childrenByPropertyId['attribute_type'].setValue(obj.type);
-
                 var my_ops_key = Object.keys(ops).find(function(element){
                   return element.includes(obj.type);
                 });
                 var my_ops = ops[my_ops_key];
                 enums = []
-                for(var i in my_ops){
-                  Object.keys(my_ops).forEach(function(key){
-                    enums = enums.concat(my_ops[key]);
-                  });
-                }
+                Object.keys(my_ops).forEach(function(key){
+
+                  enums = enums.concat(my_ops[key]);
+                });
+                self.removeField(this.parent.childrenByPropertyId.operation);
+                self.removeField(this.parent.childrenByPropertyId.second_operand);
+
 
                 var schema = {
                   "type": "select",
@@ -123,23 +127,23 @@ function init_where(){
                 var options = {
                   "type": "select",
                   "onFieldChange": function(){
-                    // var value  = this.domEl.find('select').select2('val');
                     var value  = this.getValue();
                     var type;
                     for(var i in my_ops){
-                      console.log(my_ops[i]);
+                      // console.log(my_ops[i]);
                       if(my_ops[i].includes(value)){
                         type = i;
                         break;
                       }
                     }
+                    self.removeField(this.parent.childrenByPropertyId.second_operand);
+
+                    // if operator is binary, we will add
                     if(i == 'binary_operators')
                     {
-
-
-
                       var insertAfterId = this.parent.childrenByPropertyId.operation.getId();
-                      this.parent.addItem('second_operand',schema,options, null, insertAfterId, function(){
+                      var config = self.second_operand_field();
+                      this.parent.addItem('second_operand',config.schema, config.options, null, insertAfterId, function(){
                         apply_select();
                       });
                     }
@@ -147,7 +151,6 @@ function init_where(){
                   }
                 };
                 var insertAfterId = this.parent.childrenByPropertyId.attribute_type.getId();
-
                 this.parent.addItem('operation',schema,options, null, insertAfterId, function(){
                   apply_select();
                 });
@@ -155,7 +158,11 @@ function init_where(){
             }
           }
         };
-        var insertAfterId = null;//all_attributes.alpaca.children.slice(-1)[0].getId();
+        var insertAfterId = null;
+        if(self.alpaca.children.length){
+          insertAfterId = self.alpaca.children[self.alpaca.children.length-1].getId();//all_attributes.alpaca.children.slice(-1)[0].getId();
+        }
+        console.log(insertAfterId);
 
         self.alpaca.addItem(propertyId, itemSchema, itemOptions, itemData, insertAfterId, function(){
           self.change();
@@ -180,6 +187,57 @@ function init_where(){
 
         }
       }
+    },
+    removeField: function(element){
+      if(element){
+        element.parent.removeItem(element.propertyId);
+      }
+    },
+    second_operand_field: function(){
+    var self = this;
+    return {
+    "schema": {
+        "type": "object",
+        "properties": {
+            "choice": {
+                "title": '<%=t(".choose_comparation")%>',
+                "type": "string",
+                "enum": ["attribute", "expression"],
+                "required": true
+            },
+            "attribute": {
+                // "title": "Pick a Flavour",
+                "type": "string",
+                "enum": self.items.map(a => a.enum)
+            },
+            "expression": {
+                // "title": "Pick a Topping",
+                "type": "string",
+                // "enum": ["Marshmellow", "Chocolate Chip", "Caramel", "Cookie Dough"]
+            }
+        },
+        "dependencies": {
+            "attribute": ["choice"],
+            "expression": ["choice"]
+        }
+    },
+    "options": {
+        "fields": {
+            "attribute": {
+                "optionLabels": self.items.map(a => a.label),
+                "dependencies": {
+                    "choice": "attribute"
+                }
+            },
+            "expression": {
+                "dependencies": {
+                    "choice": "expression"
+                }
+            }
+        }
+    }
+  }
+
     }
   }
 }
