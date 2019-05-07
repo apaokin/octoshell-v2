@@ -1,0 +1,32 @@
+it "sss" do
+	ticket = create(:ticket)
+
+	str = "Сообщаем:персональный опрос заполнили\r\n\r\nС уважением ВВМ
+	\r\n\r\n29.11.2018 14:27, Octoshell Notifier пишет:\r\n>\r\n>
+	Здравствуйте, Волохов Вадим Маркович!\r\n>\r\n>
+	*Жуматий Сергей Анатольевич*\r\n>\r\n>
+	Заполнить персональный опрос за 2018 год и сообщить здесь.\r\n>\r\n>
+	Перейти к заявке <http://users.parallel.ru/support/tickets/5500>\r\n>\r\n>
+	 С уважением, Octoshell.\r\n>\r\n> -------------------------------------------
+	 -----------------------------\r\n>\r\n> Лаборатория Параллельных
+	 информационных технологий НИВЦ МГУ.\r\n>\r\n> ticket_id:#{ticket.id} Не удаляйте эту строку! Вы можете добавить ответ к этой \r\n> заявке, записав Ваш ответ после следующей пунктирной линии.\r\n>\r\n> ------------------------------------------------------------------------------------------------------------------------------------------------------ \r\n\r\n\r\n-- \r\nVadim M. Volokhov\r\nDoctor of Science (Phys.)\r\n
+	 Head of the Department\r\nof Computation and Information Resources\r\
+	 nRUSSIAN ACADEMY of SCIENCES\r\nInstitute of Problems of Chemical Physics\r\n\r"
+
+	ticket = create(:ticket)
+	support = create_support
+	ticket.replies.create!(message: 'hello', author: support)
+	# new_body = ActionMailer::Base.deliveries.last.body.to_s.gsub('-' * Support.dash_number,  '-' * Support.dash_number + 'I answer hello')
+	mail = Mail::Message.new do
+		to 'support@octoshell.ru'
+		subject 'Ticket title'
+		body str
+	end
+	mail.from = support.email
+	expect { to_exim mail }.to change{ Support::Reply.count }.by 1
+	expect(Support::Reply.last).to have_attributes(author: support,
+																								 message: 'I answer hello',
+																								 ticket: ticket)
+
+
+end

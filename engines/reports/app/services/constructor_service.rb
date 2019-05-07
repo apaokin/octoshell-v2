@@ -1,6 +1,8 @@
 module Reports
   class ConstructorService
 
+    attr_reader :per
+
     WHERE = {
       all: {
         unary: ['IS NOT NULL', 'IS NULL']
@@ -74,55 +76,75 @@ module Reports
 
       keys = hash.keys
 
-      cur_assoc = path.delete_at(0)
+      cur_assoc = path[0]
       index = keys.map(&:to_s).index(cur_assoc)
       raise "error" unless index
-      find(root.children[index], hash[cur_assoc.to_sym], path)
+      find(root.children[index], hash[cur_assoc.to_sym], path[1..-1])
     end
 
-    def put_select(hash)
-      @in_select = []
-      @attribute_names = []
-      hash['attributes'].values.each do |v|
-        value = v['value']
-        if v['aggregate']
-          attribute = "#{v['aggregate']}_#{value}"
-          new_attribute = attribute.gsub('.', '_')
-          @attribute_names << new_attribute
-          @in_select << "#{v['aggregate']}(#{value}) AS #{new_attribute}"
-        else
-          @attribute_names << value
-          @in_select << value
-        end
+    def human_alias(hash)
+      string = ''
+      string << "#{hash[:aggregate]}_" if hash[:aggregate]
+      string << [hash[:human_prefix], hash[:column]].compact.join('.')
+      string
+    end
+
+    def db_alias(hash)
+      [hash[:aggregate], hash[:db_prefix], hash[:column]].compact.join('_')
+    end
+
+    def db_source(hash)
+      string = ''
+      db = "#{hash[:db_prefix]}.#{hash[:column]}"
+      if hash[:aggregate]
+        string = "#{hash[:aggregate]}(#{db})"
+      else
+        string = db
       end
+      string
     end
 
-    def put_order(hash)
-      order_array = hash['attributes'].values.select do |v|
-        order = Array(v['order'])
-        order.include?('ASC') || order.include?('DESC')
-      end.map do |v|
-        order = Array(v['order'])
-        val = order.select { |elem| elem  == 'ASC' || elem  == 'DESC'}
+    def put_select
+      @select = []
+      # @attribute_names = []
+      @attributes.each do |v|
+      # hash['attributes'].values.each do |v|
+        # value = v[:value]
+        # if v[:aggregate]
+        #   # attribute = "#{v[:aggregate]}_#{value}"
+        #   # new_attribute = attribute.gsub('.', '_')
+        #   # @attribute_names << new_attribute
+        #   # @in_select << "#{v['aggregate']}(#{value}) AS #{new_attribute}"
+        # else
+        #   # new_attribute = value.gsub('.', '_')
+        #   # @attribute_names << new_attribute
+        #   # @in_select << "#{value} AS #{new_attribute}"
+        # end
+        @select << "#{db_source(v)} AS #{db_alias(v)}"
+
+      end
+
+    end
+
+    def put_order
+      @order = @attributes.select do |a|
+        # order = Array(v['order'])
+        a[:order].include?('ASC') || a[:order].include?('DESC')
+      end.map do |a|
+        order = a[:order]
+        val = order.select { |elem| %w[ASC DESC].include?(elem) }
         raise "error" if val.count == 2
-        [v['value'], val.first]
+
+        # [db_source(a), val.first]
+        "#{db_source(a)} #{val.first}"
       end
-      @order = Hash[order_array]
     end
 
-    def put_group(hash)
-      @group = hash['attributes'].values.select do |v|
-        Array(v['order']).include?('GROUP')
-      end.map { |v| v['value'] }
+    def put_group
+      @group =  @attributes.select do |a|
+        a[:order].include?('GROUP')
+      end.map { |v| db_source(v) }
     end
-
-    def put_where(hash)
-      @where = hash['where'].values.select do |v|
-        # Array(v['order']).include?('GROUP')
-      end.map { |v| v['value'] }
-    end
-
-
 
     #Два случая: 1) лист оказался лефт, всё лефт. Есть  вершина с иннер, до неё ещё иннер 2) Если иннер джоин, всё иннер
     def deep_copy(o)
@@ -164,7 +186,6 @@ module Reports
     end
 
     def split_joins_inside(inner, left, hash)
-      # puts hash.inspect.red
       hash.delete('list')
       hash.each do |key, value|
         next if key == 'join_type'
@@ -180,46 +201,126 @@ module Reports
     def put_assocation(old_hash)
       return unless old_hash
       hash = deep_copy(old_hash)
+      put_custom_joins(hash)
       self.class.convert_left_to_inner(hash)
       split_joins(hash)
     end
 
+    def put_custom_joins(hash)
+      hash.each do |key, value|
+        next unless value['alias']
+
+        hash.delete(key)
+        put_custom_join(value)
+      end
+    end
+
+    def put_custom_join(hash)
+      @custom_join_aliases << hash['alias']
+      on = hash['on']
+      @custom_join_strings << "#{hash['join_type']} JOIN
+      #{eval(hash['join_table']).table_name} AS #{hash['alias']} ON #{on}"
+    end
+
     # {a: :b, c: :e, d: {f: [:e,:g]}}
+    def process_attributes(hash)
+      join_dependency = ActiveRecord::Associations::JoinDependency.new(
+        @activerecord_class,
+        @left_join,
+        []
+      )
+      @attributes = []
+      hash.values.each do |v|
+        value = v['value']
+        path = value.split('.')[0..-2]
+        column = value.split('.').last
+        attribute = { aggregate: v['aggregate'] ? v['aggregate'].downcase : nil,
+                      order: Array(v['order']),
+                      column: column }
+        if path.empty?
+          attribute[:db_prefix] = @activerecord_class.table_name
+          attribute[:human_prefix] = nil
+        elsif @custom_join_aliases.include?(path.first)
+          attribute[:db_prefix] = path.first
+          attribute[:human_prefix] = path.first
+
+        else
+          table = find(join_dependency.join_root, @left_join, path).instance_variable_get("@tables").first
+          prefix = table.is_a?(Arel::Nodes::TableAlias) ? table.instance_variable_get("@right") : table.instance_variable_get("@name")
+          attribute[:db_prefix] = prefix
+          attribute[:human_prefix] = path.join('.')
+
+        end
+        @attributes << attribute
+      end
+
+    end
+
+    def self.delim
+      %w[\s \. \( \) \, =].join('|')
+    end
+
+    def gsub(str, attribute)
+      delim = self.class.delim
+      puts attribute.inspect.blue
+      puts human_alias(attribute).inspect.blue
+      puts db_source(attribute).inspect.blue
+      # str = 'AAAA' + str + ' '
+      " #{str} ".gsub(/(?<=(#{delim}))#{human_alias(attribute).gsub('.', '\.')}(?=(#{delim}))/, db_source(attribute))
+    end
+
+    def gsub_all!
+      @attributes.each do |attribute|
+        @having =  gsub(@having, attribute) if @having
+        @where = gsub(@where, attribute) if @where
+        @custom_join_strings = @custom_join_strings.map do |str|
+                                gsub(str, attribute)
+                               end
+      end
+    end
+
 
     def initialize(hash)
       hash = deep_copy(hash)
+      @custom_join_strings = []
+      @custom_join_aliases = []
       @activerecord_class = eval(hash['class_name'])
       if hash['attributes']
         @inner_join = {}
         @left_join = {}
         @alias_to_output = {}
         put_assocation(hash['association'])
+        process_attributes(hash['attributes'])
 
-        join_dependency = ActiveRecord::Associations::JoinDependency.new(
-          @activerecord_class,
-          @left_join,
-          []
-        )
-        hash['attributes'].values.each do |v|
-          value = v['value']
-          path = value.split('.')[0..-2]
-          if path.any?
-            table = find(join_dependency.join_root, @left_join, path).instance_variable_get("@tables").first
-            prefix = table.is_a?(Arel::Nodes::TableAlias) ? table.instance_variable_get("@right") : table.instance_variable_get("@name")
-            v['value'] = "#{prefix}.#{value.split('.').last}"
-            @alias_to_output[prefix] = path
-          end
-        end
 
-        put_select(hash)
-        put_order(hash)
-        put_group(hash)
+        put_select#(hash)
+        put_order#(hash)
+        put_group#(hash)
+        @having = hash['having']
+        @where = hash['where']
+        gsub_all!
       end
+      @per = hash['per']
+    end
+
+
+    def count
+      form_relation.select('count(*) OVER() AS count_all')
+                   .to_a.first.attributes['count_all'].to_i
+    end
+
+    def base_relation
+      rel = @activerecord_class.order(@order).group(@group)
+                               .joins(@inner_join).left_join(@left_join)
+                               .having(@having).where(@where)
+      @custom_join_strings.each do |s|
+        rel = rel.joins(s)
+      end
+      rel
     end
 
     def form_relation
-      @activerecord_class.select(*@in_select).order(@order).group(@group)
-                         .joins(@inner_join).left_join(@left_join)
+      base_relation.select(@select)
     end
 
     def to_sql
@@ -227,25 +328,46 @@ module Reports
     end
 
 
+    def to_2d_array
+      a = to_a
+      [head(a.first)] + a.map(&:values)
+    end
+
+    def find_human_alias(key)
+      attribute = @attributes.detect { |a| db_alias(a) == key }
+      human_alias(attribute)
+    end
+
+    def head(row)
+      return unless row
+
+      row.keys
+    end
+
     def to_a
-      form_relation.to_a.map do |e|
-        # e.attributes
-        Hash[@attribute_names.map do |s|
-          [s.downcase, e[s.downcase]]
+      # form_relation.to_a.map do |h|
+      #   h.map do |key, value|
+      #     human_key = @attributes.detect()
+      #     @attributes.find(h[key]
+      #   end
+      #   # e.attributes
+      #   # Hash[@attribute_names.map do |s|
+      #   #   [s.downcase, e[s.downcase]]
+      #   # end]
+      # end
+      ActiveRecord::Base.connection.execute(form_relation.to_sql).map do |a|
+        Hash[a.map do |key, value|
+          [find_human_alias(key), value]
         end]
       end
     end
 
     def to_csv
-      a = to_a
-
       CSV.generate do |csv|
-        # csv << ["row", "of", "CSV", "data"]
-        # csv << ["another", "row"]
-        # ...
+        to_2d_array.each do |row|
+          csv << row
+        end
       end
-
-      ([a[0].keys] + a.map(&:values)).to_csv
     end
   end
 end

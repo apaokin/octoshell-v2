@@ -33,16 +33,41 @@ function init_where(){
     get_items: function(){
       return this.items;
     },
+    replace: function(old_begin, new_begin){
+      var attributes_element = $("#main-form").alpaca('get').getControlByPath('attributes');
+      // attributes_element.children = attributes_element.children
+      //   .filter(word => !word.getValue().label.startsWith(begin));
+      for(var i in attributes_element.children){
+        var elem = attributes_element.children[i];
+        var regex = RegExp(`^(${old_begin}\.)`,"g");
+        var old_label = elem.getValue().label;
+        var old_value = elem.getValue().value;
+        elem.childrenByPropertyId.label.setValue(old_label.replace(regex,new_begin.concat('.')));
+        elem.childrenByPropertyId.value.setValue(old_value.replace(regex,new_begin.concat('.')));
+      }
+      attributes_element.refresh();
+
+    },
     remove: function(begin){
       // for(var i in this.alpaca.children){
       //   var elem = this.alpaca.children[i];
       //   console.log(elem.getValue());
       // }
 
-      this.alpaca.children = this.alpaca.children.filter(word => (word.getValue() == {} ||
-        (word.getValue().all_attributes && !word.getValue().all_attributes.startsWith(begin))));
-      this.alpaca.refresh();
-      this.init();
+      // this.alpaca.children = this.alpaca.children.filter(word => (word.getValue() == {} ||
+      //   (word.getValue().all_attributes && !word.getValue().all_attributes.startsWith(begin))));
+      // this.alpaca.refresh();
+      if(!begin) return;
+
+      var attributes_element = $("#main-form").alpaca('get').getControlByPath('attributes');
+      attributes_element.children = attributes_element.children
+        .filter(word => !word.getValue().label.startsWith(begin.concat('.')));
+      attributes_element.refresh();
+      this.items = this.items
+        .filter(word => !word.enum.startsWith(begin.concat('.')));
+
+
+      // this.init();
       // console.log(this.alpaca.children);
       // this.change();
       // self.alpaca.domEl.find('div.alpaca-container').prepend(button);
@@ -66,113 +91,6 @@ function init_where(){
     },
     init: function(){
       var self = this;
-      var propertyId = "field-" + new Date().getTime();
-      self.alpaca.addItem('propertyId', {}, {hidden:true },{}, null);
-
-      var button = $('<button> <%= t(".add_where")%> </button>');
-      // console.log(this.items);
-
-      button.click(function(e){
-        // console.log(self.items);
-        // console.log(self.get_items());
-
-        // e.preventDefault();
-        var itemData = {
-
-        };
-        var itemSchema = {
-          "type": "object",
-          "properties":{
-            "all_attributes":{
-              "type": "select",
-              // "enum": self.items.map(a => a.enum)
-            },
-            "attribute_type":{
-              "hidden": true
-            }
-          }
-        };
-        var itemOptions = {
-          "type": "object",
-          "fields":{
-            "all_attributes":{
-              "type": "select",
-              // "optionLabels": self.items.map(a => a.label),
-              "onFieldChange": function(){
-                // var value  = this.domEl.find('select').select2('val');
-                var value  = this.getValue();
-                var obj = self.items.find(function(element){
-                  return element.enum == value;
-                });
-                this.parent.childrenByPropertyId['attribute_type'].setValue(obj.type);
-                var my_ops_key = Object.keys(ops).find(function(element){
-                  return element.includes(obj.type);
-                });
-                var my_ops = ops[my_ops_key];
-                enums = []
-                Object.keys(my_ops).forEach(function(key){
-
-                  enums = enums.concat(my_ops[key]);
-                });
-                self.removeField(this.parent.childrenByPropertyId.operation);
-                self.removeField(this.parent.childrenByPropertyId.second_operand);
-
-
-                var schema = {
-                  "type": "select",
-                  "title": '<%= t("select_operation") %>',
-                  "enum" : enums
-                };
-
-                var options = {
-                  "type": "select",
-                  "onFieldChange": function(){
-                    var value  = this.getValue();
-                    var type;
-                    for(var i in my_ops){
-                      // console.log(my_ops[i]);
-                      if(my_ops[i].includes(value)){
-                        type = i;
-                        break;
-                      }
-                    }
-                    self.removeField(this.parent.childrenByPropertyId.second_operand);
-
-                    // if operator is binary, we will add
-                    if(i == 'binary_operators')
-                    {
-                      var insertAfterId = this.parent.childrenByPropertyId.operation.getId();
-                      var config = self.second_operand_field();
-                      this.parent.addItem('second_operand',config.schema, config.options, null, insertAfterId, function(){
-                        apply_select();
-                      });
-                    }
-
-                  }
-                };
-                var insertAfterId = this.parent.childrenByPropertyId.attribute_type.getId();
-                this.parent.addItem('operation',schema,options, null, insertAfterId, function(){
-                  apply_select();
-                });
-              }
-            }
-          }
-        };
-        var insertAfterId = null;
-        if(self.alpaca.children.length){
-          insertAfterId = self.alpaca.children[self.alpaca.children.length-1].getId();//all_attributes.alpaca.children.slice(-1)[0].getId();
-        }
-        console.log(insertAfterId);
-
-        self.alpaca.addItem(propertyId, itemSchema, itemOptions, itemData, insertAfterId, function(){
-          self.change();
-          apply_select();
-        });
-        return false;
-      });
-      // if(self.parent.parent.path == "/")
-      self.alpaca.domEl.find('div.alpaca-container').prepend(button);
-      // button.trigger('click');
     },
     change: function(){
       var self = this;

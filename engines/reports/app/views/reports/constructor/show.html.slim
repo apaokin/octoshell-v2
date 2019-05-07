@@ -3,6 +3,9 @@ div class="page-header"
 div.col-xs-6#test-div style="word-break:break-all;"
   /= Array.new(20, 'cccccccc').join('.')
 div#main-form
+table#result.table.table-hover
+
+ul id="pagination" class="pagination-sm"
 = render partial: 'views'
 =javascript_tag do
   = render partial: 'where',formats: :js

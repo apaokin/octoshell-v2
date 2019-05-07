@@ -13,13 +13,14 @@ module Reports
                 "class_name"=>"Core::City",
                 "attributes"=>{"0"=>{"value"=>"title_ru", "label"=>"title_ru|string"}}
               }
-      expect(ConstructorService.new(hash).to_a).to eq [{"title_ru"=>"Москва"}, {"title_ru"=>"Воронеж"}]
+      expect(ConstructorService.new(hash).to_a).to eq [{"title_ru"=>"Воронеж"}, {"title_ru"=>"Москва"}]
     end
 
     it "order by query" do
       create(:city, title_ru: 'Воронеж')
       hash = {"class_name"=>"Core::City", "attributes"=>{"0"=>{"value"=>"title_ru",
         "label"=>"title_ru|string", "order"=>"ASC"}}}
+      puts ConstructorService.new(hash).to_sql
       expect(ConstructorService.new(hash).to_a).to eq [{"title_ru"=>"Воронеж"}, {"title_ru"=>"Москва"}]
     end
 
@@ -28,7 +29,7 @@ module Reports
       hash = {"class_name"=>"Core::City", "attributes"=>{"0"=>{"value"=>"id",
           "label"=>"id|integer", "aggregate"=>"COUNT"}}}
 
-      expect(ConstructorService.new(hash).to_a).to eq [{"count_id"=>2}]
+      expect(ConstructorService.new(hash).to_a).to eq [{"count_id"=>'2'}]
 
     end
 
@@ -49,8 +50,8 @@ module Reports
       hash = {"class_name"=>"Core::City", "attributes"=>{"0"=>{"value"=>"country_id",
          "label"=>"country_id|integer", "order"=>"GROUP"}, "1"=>{"value"=>
            "id", "label"=>"id|integer", "aggregate"=>"COUNT"}}}
-      expect(ConstructorService.new(hash).to_a).to eq [{"country_id"=>country.id, "count_id"=>2},
-        {"country_id"=>1, "count_id"=>1}]
+      expect(ConstructorService.new(hash).to_a).to match_array [{"country_id"=>country.id.to_s, "count_id"=>2.to_s},
+        {"country_id"=>'1', "count_id"=>'1'}]
     end
 
     it ".convert_left_to_inner" do
@@ -93,15 +94,58 @@ module Reports
       hash = {"class_name"=>"Core::Organization", "attributes"=>{"0"=>{"value"=>"name", "label"=>"name|string", "order"=>["GROUP"]},
               "1"=>{"value"=>"departments.id", "label"=>"departments.id|integer", "aggregate"=>"COUNT"}},
               "association"=>{"list"=>"departments", "departments"=>{"join_type"=>"inner"}}}
-      puts ConstructorService.new(hash).to_sql
+      # puts ConstructorService.new(hash).to_sql
+      constructor = ConstructorService.new(hash)
+      ActiveRecord::Base.logger = Logger.new(STDOUT) if defined?(ActiveRecord::Base)
+      puts constructor.count.inspect.blue
       puts ConstructorService.new(hash).to_a
     end
 
 
 
-    it "#where" do
-      puts ConstructorService.where
+    it "performs custom inner join with base table" do
+
+      org1 = create(:organization, name: 'org1')
+      org2 = create(:organization, name: 'org2')
+
+      params = {"class_name"=>"Core::Organization", "attributes"=>{"0"=>{"value"=>"name",
+                "label"=>"name|string"}, "1"=>{"value"=>"c_core_organization_kinds.name_ru",
+                "label"=>"c_core_organization_kinds.name_ru|string"}}, "association"=>
+                {"custom-join-1557138479832"=>{"join_table"=>"Core::OrganizationKind",
+                  "alias"=>"c_core_organization_kinds", "join_type"=>"inner",
+                  "on"=>"kind_id= c_core_organization_kinds.id"}}}
+
+      puts Core::OrganizationKind.all.to_a.inspect
+      puts ConstructorService.new(params).to_sql.inspect.blue
+      puts ConstructorService.new(params).to_a.inspect
+      # ConstructorService.new(params).to_a.inspect
+
+
     end
+
+    it "rewrites having for db" do
+      org1 = create(:organization, name: 'org1')
+      org2 = create(:organization, name: 'org2')
+      kind_name_ru = org1.kind.name_ru
+      params = {"class_name"=>"Core::Organization", "attributes"=>{"0"=>{"value"=>"kind.name_ru",
+             "label"=>"kind.name_ru|string"}, "1"=>{"value"=>"name", "label"=>"name|string"}},
+             "association"=>{"list"=>"kind", "kind"=>{"join_type"=>"inner"}},
+             "where"=>"kind.name_ru = '#{kind_name_ru}'", "per"=>"20"}
+      puts ConstructorService.new(params).to_a.inspect
+    end
+
+    it "rewrites on for db" do
+      # org1 = create(:organization, name: 'org1')
+      # org2 = create(:organization, name: 'org2')
+      # kind_name_ru = org1.kind.name_ru
+      params = {"class_name"=>"Core::Cluster", "attributes"=>{"0"=>{"value"=>"admin_login",
+        "label"=>"admin_login|string"}}, "association"=>
+        {"custom-join-1557265646481"=>{"join_table"=>"Core::Cluster",
+          "alias"=>"c_core_clusters", "join_type"=>"inner",
+          "on"=>"id=c_core_clusters.id"}}, "per"=>"20"}
+      puts ConstructorService.new(params).to_a.inspect
+    end
+
 
 
   end

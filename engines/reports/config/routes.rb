@@ -4,6 +4,7 @@ Reports::Engine.routes.draw do
 		collection do
 			get :class_info
 			post :csv
+			post :array
 		end
 	end
 end

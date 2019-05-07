@@ -1,0 +1,22 @@
+id,file_path,errors,updated_at
+1230,/var/www/octoshell2/releases/13/public/uploads/sessions/report/materials/1230/original/отчет_2013.rar,"{:materials=>""файл слишком большой (максимальный размер: 20.0 МБ)""}",2015-01-14 12:09:50 +0300
+1325,/var/www/octoshell2/releases/13/public/uploads/sessions/report/materials/1325/original/Отчет-2013.zip,"{:materials=>""файл слишком большой (максимальный размер: 20.0 МБ)""}",2015-01-14 12:10:12 +0300
+1402,/var/www/octoshell2/releases/13/public/uploads/sessions/report/materials/1402/original/отчет_2013.rar,"{:materials=>""файл слишком большой (максимальный размер: 20.0 МБ)""}",2015-01-14 12:10:24 +0300
+5124,/var/www/octoshell2/releases/13/public/uploads/sessions/report/materials/5124/original/Report_2019_Markina.pdf,"{:materials=>""не может быть пустым""}",2019-02-11 11:34:38 +0300
+5205,/var/www/octoshell2/releases/13/public/uploads/sessions/report/materials/5205/original/nivc_report.pdf,"{:materials=>""не может быть пустым""}",2019-03-01 10:11:35 +0300
+4404,/var/www/octoshell2/releases/13/public/uploads/sessions/report/materials/4404/original/report_2018.zip,"{:materials=>""файл слишком большой (максимальный размер: 20.0 МБ)""}",2018-03-08 17:40:15 +0300
+4489,/var/www/octoshell2/releases/13/public/uploads/sessions/report/materials/4489/original/report-252.zip,"{:materials=>""файл слишком большой (максимальный размер: 20.0 МБ)""}",2018-02-14 10:54:17 +0300
+4509,/var/www/octoshell2/releases/13/public/uploads/sessions/report/materials/4509/original/grigorenko490.rar,"{:materials=>""файл слишком большой (максимальный размер: 20.0 МБ)""}",2018-03-07 18:20:40 +0300
+4539,/var/www/octoshell2/releases/13/public/uploads/sessions/report/materials/4539/original/LOM2_errors,"{:materials=>""не может быть пустым""}",2018-02-14 12:07:08 +0300
+4615,/var/www/octoshell2/releases/13/public/uploads/sessions/report/materials/4615/original/khrenova-otchet-2017.zip,"{:materials=>""файл слишком большой (максимальный размер: 20.0 МБ)""}",2018-02-14 10:54:27 +0300
+4712,/var/www/octoshell2/releases/13/public/uploads/sessions/report/materials/4712/original/Отчет.pdf,"{:materials=>""не может быть пустым""}",2018-02-10 10:56:44 +0300
+4788,/var/www/octoshell2/releases/13/public/uploads/sessions/report/materials/4788/original/report-25.zip,"{:materials=>""файл слишком большой (максимальный размер: 20.0 МБ)""}",2018-02-14 10:54:12 +0300
+4744,/var/www/octoshell2/releases/13/public/uploads/sessions/report/materials/4744/original/reports.zip,"{:materials=>""файл слишком большой (максимальный размер: 20.0 МБ)""}",2018-02-14 10:54:13 +0300
+4867,/var/www/octoshell2/releases/13/public/uploads/sessions/report/materials/4867/original/Диплом.pdf,"{:materials=>""не может быть пустым""}",2018-03-18 23:27:48 +0300
+4985,/var/www/octoshell2/releases/13/public/uploads/sessions/report/materials/4985/original/report17a.pdf,"{:materials=>""не может быть пустым""}",2018-03-07 13:43:39 +0300
+5070,/var/www/octoshell2/releases/13/public/uploads/sessions/report/materials/5070/original/статья20170529.pdf,"{:materials=>""не может быть пустым""}",2018-02-04 16:51:53 +0300
+5057,/var/www/octoshell2/releases/13/public/uploads/sessions/report/materials/5057/original/2018_результаты.pdf,"{:materials=>""не может быть пустым""}",2018-03-08 02:43:59 +0300
+5077,/var/www/octoshell2/releases/13/public/uploads/sessions/report/materials/5077/original/статья20170529.pdf,"{:materials=>""не может быть пустым""}",2018-02-25 19:59:34 +0300
+4783,/var/www/octoshell2/releases/13/public/uploads/sessions/report/materials/4783/original/Report_1756_Bushuev.pdf,"{:materials=>""не может быть пустым""}",2018-03-01 10:12:36 +0300
+5066,/var/www/octoshell2/releases/13/public/uploads/sessions/report/materials/5066/original/msu_seminar_nov2018.pdf,"{:materials=>""не может быть пустым""}",2019-02-18 18:37:02 +0300
+4953,/var/www/octoshell2/releases/13/public/uploads/sessions/report/materials/4953/original/Lomonosov_Report_2017.zip,"{:materials=>""файл слишком большой (максимальный размер: 20.0 МБ)""}",2018-02-14 10:54:24 +0300

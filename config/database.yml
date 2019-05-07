@@ -12,7 +12,7 @@ test:
   database: new_octoshell_test
   user: octo
   host: localhost
-  password: 'octopass'
+  password: 1234
 
 production:
   adapter: postgresql
@@ -23,4 +23,4 @@ production:
   min_messages: warning
   user: octo
   host: localhost
-  password: 'octopass'
+  password: 1234
