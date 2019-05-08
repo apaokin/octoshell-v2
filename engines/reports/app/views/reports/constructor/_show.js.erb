@@ -55,7 +55,7 @@ build_table([['header'], ['data']]);
 
 
 function checkbox_changed(e){
-  if(this.parent.childrenByPropertyId.on){
+  if(this.parent.childrenByPropertyId.on || this.parent.childrenByPropertyId.class_name){
     var array = [this.parent.childrenByPropertyId.alias.getValue()];
   }else{
     var array = this.parent.path.split('/');
@@ -222,9 +222,7 @@ function new_join(elem){
       },
       "alias":{
         "title": '<%= t(".alias") %>',
-        "type": "string",
-        "required": true
-
+        "type": "string"
         // "enum": self.assocs.enum,
       },
       "join_type":{
@@ -314,8 +312,35 @@ function new_join(elem){
     apply_select();
     // console.log(elem.children[elem.children.length-1].childrenByPropertyId.on);
     // console.log(elem.children[elem.children.length-1].childrenByPropertyId);
-
     bind_autocomplete(elem.children[elem.children.length-1].childrenByPropertyId.on.containerItemEl);
+    var button = $('<button> <%= t(".delete")%> </button>');
+    var cur_elem = elem.children[elem.children.length -1];
+    button.click(function(){
+      // console.log(cur_elem.schema.title);
+      // console.log()
+      // var array = cur_elem.path.split('/');
+      // array.splice(0,2);
+      // console.log(array);
+      console.log(cur_elem);
+      var begin = cur_elem.childrenByPropertyId.alias.getValue();
+
+      console.log(begin);
+      // console.log(array);
+      // var attributes_element = $("#main-form").alpaca('get').getControlByPath('attributes');
+      // attributes_element.children = attributes_element.children.filter(word => !word.getValue().label.startsWith(begin));
+      // attributes_element.refresh();
+      // for( var i in where_container.alpaca.children){
+      //   console.log(where_container.alpaca.children[i].getValue());
+      // }
+
+      where_container.remove(begin);
+      where_container.change();
+      elem.removeItem(cur_elem.propertyId);
+      return false;
+    });
+      cur_elem.children[0].domEl.prepend(button);
+
+
   });
 
 
@@ -323,7 +348,9 @@ function new_join(elem){
 
 function bind_autocomplete(element) {
     function split( val ) {
-      return val.split( /,\s*/ );
+      return val.split( /(,|\s|=|\(|\)|\+|\-|\/)+/ );
+      // return val.split( /()\s)+/ );
+
     }
     function extractLast( term ) {
       return split( term ).pop();
@@ -341,6 +368,7 @@ function bind_autocomplete(element) {
         minLength: 0,
         source: function( request, response ) {
           // console.log(availableTags);
+          // console.log(request.term);
           // delegate back to autocomplete, but extract the last term
           response( $.ui.autocomplete.filter(
              where_container.items.map(a => a.enum), extractLast( request.term ) ) );
@@ -385,6 +413,10 @@ $("#main-form").alpaca({
                 "title": '<%= t(".class_name") %>',
                 "enum": class_options,
                 "required": true
+              },
+              "alias":{
+                "title": '<%= t(".alias") %>',
+                "disabled": true
               },
               "all_attributes":{
                 "title": '<%= t(".choose_attributes") %>'
@@ -460,9 +492,10 @@ $("#main-form").alpaca({
 
                     al.schema.enum = json.attributes;
                     al.options.optionLabels = json.types;
-                    where_container.assign(json.attributes, json.types);
+                    where_container.assign(json.attributes, json.types, json.table_name);
                     where_container.change();
                     al.refresh();
+                    self.parent.childrenByPropertyId.alias.setValue(json.table_name);
                     var attributes_elem = $("#main-form").alpaca('get').getControlByPath('attributes');
                     if(attributes_elem.children.length > 0){
                       attributes_elem.children.splice(0,attributes_elem.children.length);
@@ -492,6 +525,9 @@ $("#main-form").alpaca({
                     // });
                   });
               }
+            },
+            "alias":{
+              "disabled": true,
             },
             "all_attributes":{
               "type": "select",
@@ -603,7 +639,7 @@ $("#main-form").alpaca({
                 "class_name": "column-1",
                 "all_attributes": "column-1",
                 "association": "column-1",
-                // "where_list": "column-1",
+                "alias": "column-1",
                 "attributes" : "column-2",
                 "having": "column-2",
                 "where": "column-2",

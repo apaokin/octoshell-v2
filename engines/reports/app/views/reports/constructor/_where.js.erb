@@ -2,12 +2,12 @@ function init_where(){
   where_container = {
     items: [],
     alpaca: $("#main-form").alpaca('get').getControlByPath('where'),
-    assign: function(enums,labels){
+    assign: function(enums,labels,prefix){
       this.items = [];
       for(var i in enums){
         this.items[i] = {
-          enum: enums[i],
-          label:labels[i],
+          enum: prefix.concat('.').concat(enums[i]),
+          label:prefix.concat('.').concat(labels[i]),
           type: labels[i].split('|').slice(-1)[0]
         };
       }

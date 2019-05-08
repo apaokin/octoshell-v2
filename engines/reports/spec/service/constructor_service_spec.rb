@@ -11,32 +11,32 @@ module Reports
       create(:city, title_ru: 'Воронеж')
       hash = {
                 "class_name"=>"Core::City",
-                "attributes"=>{"0"=>{"value"=>"title_ru", "label"=>"title_ru|string"}}
+                "attributes"=>{"0"=>{"value"=>"core_cities.title_ru", "label"=>"core_cities.title_ru|string"}}
               }
-      expect(ConstructorService.new(hash).to_a).to eq [{"title_ru"=>"Воронеж"}, {"title_ru"=>"Москва"}]
+      expect(ConstructorService.new(hash).to_a).to eq [{"core_cities.title_ru"=>"Москва"}, {"core_cities.title_ru"=>"Воронеж"}]
     end
 
     it "order by query" do
       create(:city, title_ru: 'Воронеж')
-      hash = {"class_name"=>"Core::City", "attributes"=>{"0"=>{"value"=>"title_ru",
-        "label"=>"title_ru|string", "order"=>"ASC"}}}
+      hash = {"class_name"=>"Core::City", "attributes"=>{"0"=>{"value"=>"core_cities.title_ru",
+        "label"=>"core_cities.title_ru|string", "order"=>"ASC"}}}
       puts ConstructorService.new(hash).to_sql
-      expect(ConstructorService.new(hash).to_a).to eq [{"title_ru"=>"Воронеж"}, {"title_ru"=>"Москва"}]
+      expect(ConstructorService.new(hash).to_a).to eq [{"core_cities.title_ru"=>"Воронеж"}, {"core_cities.title_ru"=>"Москва"}]
     end
 
     it 'selects count' do
       create(:city, title_ru: 'Воронеж')
-      hash = {"class_name"=>"Core::City", "attributes"=>{"0"=>{"value"=>"id",
-          "label"=>"id|integer", "aggregate"=>"COUNT"}}}
+      hash = {"class_name"=>"Core::City", "attributes"=>{"0"=>{"value"=>"core_cities.id",
+          "label"=>"core_cities.id|integer", "aggregate"=>"COUNT"}}}
 
-      expect(ConstructorService.new(hash).to_a).to eq [{"count_id"=>'2'}]
+      expect(ConstructorService.new(hash).to_a).to eq [{"count_core_cities.id"=>'2'}]
 
     end
 
     it '#to_csv' do
       create(:city, title_ru: 'Воронеж')
-      hash = {"class_name"=>"Core::City", "attributes"=>{"0"=>{"value"=>"id",
-          "label"=>"id|integer", "aggregate"=>"COUNT"}}}
+      hash = {"class_name"=>"Core::City", "attributes"=>{"0"=>{"value"=>"core_cities.id",
+          "label"=>"core_cities.id|integer", "aggregate"=>"COUNT"}}}
 
       puts ConstructorService.new(hash).to_csv.inspect
 
@@ -47,11 +47,11 @@ module Reports
       country = create(:country, title_en: 'Germany')
       create(:city, title_en: 'Hamburg', country: country)
       create(:city, title_en: 'Frankfurt', country: country)
-      hash = {"class_name"=>"Core::City", "attributes"=>{"0"=>{"value"=>"country_id",
+      hash = {"class_name"=>"Core::City", "attributes"=>{"0"=>{"value"=>"core_cities.country_id",
          "label"=>"country_id|integer", "order"=>"GROUP"}, "1"=>{"value"=>
-           "id", "label"=>"id|integer", "aggregate"=>"COUNT"}}}
-      expect(ConstructorService.new(hash).to_a).to match_array [{"country_id"=>country.id.to_s, "count_id"=>2.to_s},
-        {"country_id"=>'1', "count_id"=>'1'}]
+           "core_cities.id", "label"=>"id|integer", "aggregate"=>"COUNT"}}}
+      expect(ConstructorService.new(hash).to_a).to match_array [{"core_cities.country_id"=>country.id.to_s, "count_core_cities.id"=>2.to_s},
+        {"core_cities.country_id"=>'1', "count_core_cities.id"=>'1'}]
     end
 
     it ".convert_left_to_inner" do
@@ -70,7 +70,7 @@ module Reports
       # create(:city, title_en: 'Frankfurt', country: country)
 
       hash = {"class_name"=>"Core::City", "attributes"=>{"0"=>{
-        "value"=>"title_ru", "label"=>"title_ru|string"}, "1"=>{
+        "value"=>"core_cities.title_ru", "label"=>"core_cities.title_ru|string"}, "1"=>{
           "value"=>"organizations.projects.title",
           "label"=>"organizations.projects.title|string"}},
           "association"=>{"organizations"=>{"join_type"=>"inner",
@@ -91,12 +91,13 @@ module Reports
       create(:organization_department, organization: org2)
       create(:organization_department, organization: org2)
 
-      hash = {"class_name"=>"Core::Organization", "attributes"=>{"0"=>{"value"=>"name", "label"=>"name|string", "order"=>["GROUP"]},
+      hash = {"class_name"=>"Core::Organization", "attributes"=>{"0"=>{"value"=>"core_organizations.name",
+              "label"=>"core_organizations.name|string", "order"=>["GROUP"]},
               "1"=>{"value"=>"departments.id", "label"=>"departments.id|integer", "aggregate"=>"COUNT"}},
               "association"=>{"list"=>"departments", "departments"=>{"join_type"=>"inner"}}}
       # puts ConstructorService.new(hash).to_sql
       constructor = ConstructorService.new(hash)
-      ActiveRecord::Base.logger = Logger.new(STDOUT) if defined?(ActiveRecord::Base)
+      # ActiveRecord::Base.logger = Logger.new(STDOUT) if defined?(ActiveRecord::Base)
       puts constructor.count.inspect.blue
       puts ConstructorService.new(hash).to_a
     end
@@ -108,12 +109,12 @@ module Reports
       org1 = create(:organization, name: 'org1')
       org2 = create(:organization, name: 'org2')
 
-      params = {"class_name"=>"Core::Organization", "attributes"=>{"0"=>{"value"=>"name",
-                "label"=>"name|string"}, "1"=>{"value"=>"c_core_organization_kinds.name_ru",
+      params = {"class_name"=>"Core::Organization", "attributes"=>{"0"=>{"value"=>"core_organizations.name",
+                "label"=>"core_organizations.name|string"}, "1"=>{"value"=>"c_core_organization_kinds.name_ru",
                 "label"=>"c_core_organization_kinds.name_ru|string"}}, "association"=>
                 {"custom-join-1557138479832"=>{"join_table"=>"Core::OrganizationKind",
                   "alias"=>"c_core_organization_kinds", "join_type"=>"inner",
-                  "on"=>"kind_id= c_core_organization_kinds.id"}}}
+                  "on"=>"core_organizations.kind_id= c_core_organization_kinds.id"}}}
 
       puts Core::OrganizationKind.all.to_a.inspect
       puts ConstructorService.new(params).to_sql.inspect.blue
@@ -128,7 +129,7 @@ module Reports
       org2 = create(:organization, name: 'org2')
       kind_name_ru = org1.kind.name_ru
       params = {"class_name"=>"Core::Organization", "attributes"=>{"0"=>{"value"=>"kind.name_ru",
-             "label"=>"kind.name_ru|string"}, "1"=>{"value"=>"name", "label"=>"name|string"}},
+             "label"=>"kind.name_ru|string"}, "1"=>{"value"=>"core_organizations.name", "label"=>"core_organizations.name|string"}},
              "association"=>{"list"=>"kind", "kind"=>{"join_type"=>"inner"}},
              "where"=>"kind.name_ru = '#{kind_name_ru}'", "per"=>"20"}
       puts ConstructorService.new(params).to_a.inspect
@@ -138,13 +139,32 @@ module Reports
       # org1 = create(:organization, name: 'org1')
       # org2 = create(:organization, name: 'org2')
       # kind_name_ru = org1.kind.name_ru
-      params = {"class_name"=>"Core::Cluster", "attributes"=>{"0"=>{"value"=>"admin_login",
-        "label"=>"admin_login|string"}}, "association"=>
+      params = {"class_name"=>"Core::Cluster", "attributes"=>{"0"=>{"value"=>"core_clusters.admin_login",
+        "label"=>"core_clusters.admin_login|string"}}, "association"=>
         {"custom-join-1557265646481"=>{"join_table"=>"Core::Cluster",
           "alias"=>"c_core_clusters", "join_type"=>"inner",
-          "on"=>"id=c_core_clusters.id"}}, "per"=>"20"}
+          "on"=>"core_clusters.id=c_core_clusters.id"}}, "per"=>"20"}
       puts ConstructorService.new(params).to_a.inspect
     end
+    it "rewrites for db" do
+      params = {"class_name"=>"Core::Project", "attributes"=>{"0"=>{"value"=>"organization.departments.name",
+        "label"=>"organization.departments.name|string"}}, "association"=>{"list"=>
+          "organization", "organization"=>{"join_type"=>"inner",
+        "list"=>"departments", "departments"=>{"join_type"=>"inner"}}}, "per"=>"20"}
+      puts ConstructorService.new(params).to_a.inspect
+
+    end
+    it "rewrites for db2" do
+      params = {"class_name"=>"Core::Organization", "attributes"=>{"0"=>{"value"=>
+        "city.title_en", "label"=>"city.title_en|string"}},
+        "association"=>{"list"=>"kind", "city"=>{"join_type"=>"inner"},
+        "kind"=>{"join_type"=>"inner"}}, "per"=>"20"}
+      puts ConstructorService.new(params).to_a.inspect
+
+    end
+
+
+
 
 
 

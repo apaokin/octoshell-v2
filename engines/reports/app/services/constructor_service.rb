@@ -72,6 +72,7 @@ module Reports
     end
 
     def find(root, hash, path)
+
       return root if Array(path).empty?
 
       keys = hash.keys
@@ -189,10 +190,9 @@ module Reports
       hash.delete('list')
       hash.each do |key, value|
         next if key == 'join_type'
+
         type = value['join_type']
-        if type == 'inner' && inner
-          inner[key.to_sym] = {}
-        end
+        inner[key.to_sym] = {} if type == 'inner' && inner
         left[key.to_sym] = {}
         split_joins_inside(inner[key.to_sym], left[key.to_sym], value)
       end
@@ -224,11 +224,13 @@ module Reports
 
     # {a: :b, c: :e, d: {f: [:e,:g]}}
     def process_attributes(hash)
-      join_dependency = ActiveRecord::Associations::JoinDependency.new(
+      @join_dependency = ActiveRecord::Associations::JoinDependency.new(
         @activerecord_class,
         @left_join,
         []
       )
+      scan_all_joins
+
       @attributes = []
       hash.values.each do |v|
         value = v['value']
@@ -237,17 +239,18 @@ module Reports
         attribute = { aggregate: v['aggregate'] ? v['aggregate'].downcase : nil,
                       order: Array(v['order']),
                       column: column }
-        if path.empty?
+        if path.first == @activerecord_class.table_name
           attribute[:db_prefix] = @activerecord_class.table_name
-          attribute[:human_prefix] = nil
+          attribute[:human_prefix] = @activerecord_class.table_name
         elsif @custom_join_aliases.include?(path.first)
           attribute[:db_prefix] = path.first
           attribute[:human_prefix] = path.first
 
         else
-          table = find(join_dependency.join_root, @left_join, path).instance_variable_get("@tables").first
-          prefix = table.is_a?(Arel::Nodes::TableAlias) ? table.instance_variable_get("@right") : table.instance_variable_get("@name")
-          attribute[:db_prefix] = prefix
+          # table = find(join_dependency.join_root, @left_join, path).instance_variable_get("@tables").first
+          # prefix = table.is_a?(Arel::Nodes::TableAlias) ? table.instance_variable_get("@right") : table.instance_variable_get("@name")
+
+          attribute[:db_prefix] = db_prefix_by_path(path)
           attribute[:human_prefix] = path.join('.')
 
         end
@@ -260,21 +263,46 @@ module Reports
       %w[\s \. \( \) \, =].join('|')
     end
 
-    def gsub(str, attribute)
-      delim = self.class.delim
-      puts attribute.inspect.blue
-      puts human_alias(attribute).inspect.blue
-      puts db_source(attribute).inspect.blue
-      # str = 'AAAA' + str + ' '
-      " #{str} ".gsub(/(?<=(#{delim}))#{human_alias(attribute).gsub('.', '\.')}(?=(#{delim}))/, db_source(attribute))
+    def gsub(str, human, db)
+      # delim = self.class.delim
+      # str.gsub(/ #{human_alias(attribute).gsub('.', '\.')}(?=(#{delim}))/, db_source(attribute))
+      (' ' + str).gsub(/(?<=[^\.])#{human}(?=\.)/, db)
+      # " #{str} ".gsub(/(?<=(#{delim}))#{human_alias(attribute).gsub('.', '\.')}(?=(#{delim}))/, db_source(attribute))
     end
 
+    def db_prefix_by_path(path)
+      table = find(@join_dependency.join_root, @left_join, path).instance_variable_get("@tables").first
+      table.is_a?(Arel::Nodes::TableAlias) ? table.instance_variable_get("@right") : table.instance_variable_get("@name")
+    end
+
+    def handle_rewrite(key, value, arr)
+      new_arr = arr + [key.to_s]
+      if value == {}
+        @human_to_db[new_arr.join('.')] = db_prefix_by_path(new_arr)
+        return
+      end
+      value.each do |k, v|
+        handle_rewrite(k, v, new_arr)
+      end
+    end
+
+    def scan_all_joins
+      @human_to_db = {}
+      @left_join.each do |key, value|
+        handle_rewrite(key, value, [])
+      end
+    end
+
+
     def gsub_all!
-      @attributes.each do |attribute|
-        @having =  gsub(@having, attribute) if @having
-        @where = gsub(@where, attribute) if @where
+      # @left_join.each do |key, value|
+      #   handle_rewrite(key, value, [])
+      # end
+      @human_to_db.each do |key, value|
+        @having = gsub(@having, key, value) if @having
+        @where = gsub(@where, key, value) if @where
         @custom_join_strings = @custom_join_strings.map do |str|
-                                gsub(str, attribute)
+                                gsub(str, key, value)
                                end
       end
     end
