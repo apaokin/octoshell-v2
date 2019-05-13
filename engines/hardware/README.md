@@ -9,7 +9,7 @@ Devices can be created or updated via WEB API.
 		"language": "en", # Chosen language affects validation. You should specify mandatory attributes (e.g. name) for your devices.
 		"data":[
 			{
-				"id":4, # specify id to edit existing device. Don't specify him to create a new device.
+				"id":4, # specify id to edit existing device. Don't specify it to create a new device.
 				"name_ru":"", # unnecessary
 				"name_en":"Switch 1", # name en is required for english language!
 				"description_ru":"",  # unnecessary
