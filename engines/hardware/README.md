@@ -1,5 +1,5 @@
 # Hardware
-Engine is developed to  administer supercomputer center hardware, its status.
+Engine is developed to  administer supercomputer center hardware and its status.
 ## API
 Devices can be created or updated via WEB API.
 	You have to specify secret named **hardware_api** and send JSON to /hardware/admin/items/json_update in this format:
