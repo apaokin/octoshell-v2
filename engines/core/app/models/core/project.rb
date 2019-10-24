@@ -40,11 +40,11 @@ module Core
                                        source: :group
 
     has_many :members, dependent: :destroy, inverse_of: :project
-    has_many :users, through: :members, class_name: Core.user_class.to_s, inverse_of: :projects
+    has_many :users, through: :members, class_name: Core.user_class_to_s, inverse_of: :projects
 
     has_one :member_owner, -> { where(owner: true) }, class_name: Member.to_s
     has_one :owner, through: :member_owner,
-                    class_name: Core.user_class.to_s,
+                    class_name: Core.user_class_to_s,
                     source: :user,
                     inverse_of: :owned_projects
 

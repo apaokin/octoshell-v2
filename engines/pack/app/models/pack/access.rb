@@ -72,6 +72,11 @@ module Pack
     after_commit :send_email, if: :admin_update?
     after_commit :create_ticket, if: :user_request?
 
+
+    def to_name
+      "#{to.name}| #{who_name_with_type}"
+    end
+
     def admin_update?
       (who_type == 'User' || who_type == 'Core::Project') && !user_edit
     end

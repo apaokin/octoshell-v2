@@ -7,6 +7,8 @@ module Support
     def index
       @search = current_user.tickets.search(params[:q])
       @tickets = @search.result(distinct: true)
+                        .preload({ field_values: [{ topics_field: :field },
+                                                  :_field_option] }, :topic)
                         .order("id DESC, updated_at DESC")
                         .page(params[:page])
     end
@@ -75,12 +77,26 @@ module Support
 
     def edit
       @ticket = find_ticket(params[:id])
+      @field_values_form = Support::FieldValuesForm.new(@ticket)
     end
 
     # TODO: ajax
+    # def update
+    #   @ticket = find_ticket(params[:id])
+    #   if @ticket.update(ticket_params)
+    #     redirect_to @ticket
+    #   else
+    #     render :edit
+    #   end
+    # end
+
     def update
       @ticket = find_ticket(params[:id])
-      if @ticket.update(ticket_params)
+      @ticket.assign_attributes(ticket_params)
+      @field_values_form = Support::FieldValuesForm.new(@ticket, params[:ticket][:field_values])
+      valid = @field_values_form.valid?
+      if @ticket.valid? && valid
+        @ticket.save
         redirect_to @ticket
       else
         render :edit

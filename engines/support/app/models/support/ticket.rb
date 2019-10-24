@@ -39,8 +39,8 @@ module Support
     mount_uploader :attachment, AttachmentUploader
     mount_uploader :export_attachment, TicketAttachmentUploader, mount_on: :attachment_file_name
 
-    belongs_to :reporter, class_name: Support.user_class.to_s, foreign_key: :reporter_id
-    belongs_to :responsible, class_name: Support.user_class.to_s, foreign_key: :responsible_id
+    belongs_to :reporter, class_name: Support.user_class_to_s, foreign_key: :reporter_id
+    belongs_to :responsible, class_name: Support.user_class_to_s, foreign_key: :responsible_id
     belongs_to :project, class_name: "Core::Project"
     belongs_to :surety, class_name: "Core::Surety"
     belongs_to :cluster, class_name: "Core::Cluster"
@@ -73,17 +73,12 @@ module Support
 
     scope :find_by_content, -> (q) do
       processed = q.mb_chars.split(' ').join('%')
-      left_join(:replies).where("support_replies.message LIKE :q OR support_tickets.message LIKE :q",q: "%#{processed}%")
+      left_joins(:replies).where("support_replies.message LIKE :q OR support_tickets.message LIKE :q",q: "%#{processed}%")
     end
 
     after_save do
       field_values.where(value: ['', nil]).destroy_all
     end
-
-    def field_values_attributes(params)
-
-    end
-
 
     def self.field_values_with_options(*args)
       rel = all
@@ -187,9 +182,9 @@ module Support
 
     def select_field_values
       field_values.select do |f_v|
-        f_v.value.present? && (f_v.field.model_collection.present? ||
-          f_v.field.field_options.any?)
-      end
+        f_v.field && f_v.value.present? && (f_v.field.model_collection? ||
+          f_v.field.usual_choice?)
+      end.group_by(&:field)
     end
 
     def accept(user)
@@ -282,6 +277,11 @@ module Support
     def topics_fields_to_fill
       topic.parents_with_self.map { |t| t.topics_fields.to_a }.flatten
            .uniq(&:field_id)
+    end
+
+    def empty_topic_fields
+      topic.parents_with_self.map { |t| t.topics_fields.to_a }.flatten
+           .uniq(&:field_id) - field_values.map(&:topics_field).uniq(&:field_id)
     end
 
     private

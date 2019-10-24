@@ -15,6 +15,7 @@ module Support
       @user_link = args[:user_link]
       @admin_source = args[:admin_source]
       @user_source = args[:user_source]
+      # @model = args[:model]
 
       @human = args[:human] || :to_s
       self.class.all[key] = self

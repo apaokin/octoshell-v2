@@ -4,6 +4,7 @@ Support::Engine.routes.draw do
       put :close
       put :reopen
       post :accept
+      post :continue, on: :collection
       member do
         put :edit_responsible
       end

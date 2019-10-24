@@ -90,13 +90,13 @@ div class="page-header"
           td
             = link_to @ticket.cluster, core.admin_cluster_path(@ticket.cluster)
 
-      - @ticket.field_values.each do |field_value|
-        - if field_value.value.present?
+      - @ticket.field_values.group_by(&:field).each do |field, field_values|
+          - next unless field
           tr
             td
-              = field_value.field.present? ? field_value.field.name : "N/A"
+              = field.name
             td
-              =  field_value.field.present? ? show_field_value(field_value, :admins) : ''
+              = show_field_value(field, field_values, :admin)
 
     /- if @ticket.has_blank_fields?
       div class="col-xs-12 link"

@@ -1,4 +1,10 @@
 div class="page-header"
   h1 = t(".title")
-
-= render "form"
+- if @ticket.show_questions?
+  = bootstrap_nested_form_for @ticket, url: continue_admin_tickets_path, layout: :horizontal, multipart: true do |f|
+    = f.collection_select :topic_id, Support::Topic.accessible_by(current_ability, :access).leaf_topics,
+                          :id, :name_with_parents, include_blank: true
+    = f.form_group do
+      = f.submit t("actions.save")
+- else
+  = render "form"

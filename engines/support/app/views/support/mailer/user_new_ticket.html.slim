@@ -1,0 +1,13 @@
+= render "header"
+
+p #{t('.admin_created_request')}
+
+h4 #{t('.ticket')}: #{@ticket}
+h5 style="color: 666;" #{t('.topic')}: #{@ticket.topic.name_with_parents}
+p
+  strong = @ticket.subject
+
+p
+	= link_to t('.show_ticket_details'), polymorphic_url([@ticket], anchor: 'reply')
+
+= render "footer"

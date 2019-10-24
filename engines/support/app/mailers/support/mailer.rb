@@ -6,6 +6,12 @@ module Support
       mail to: support_emails, subject: t(".subject")
     end
 
+    def user_new_ticket(ticket_id)
+      @ticket = Support::Ticket.find(ticket_id)
+      mail to: @ticket.reporter.email, subject: t(".subject")
+    end
+
+
     def new_ticket_reply(ticket_id, user_id)
       @ticket = Support::Ticket.find(ticket_id)
       @user = Support.user_class.find(user_id)

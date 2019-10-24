@@ -33,3 +33,6 @@
     - elsif field.text?
        = ff.text_field topics_field_id, label: field.name, required: topics_field.required,
              help: field.hint
+    - elsif field.markdown?
+       = markdown_area ff,  topics_field_id, label: field.name, required: topics_field.required,
+                                        help: field.hint, rows: 10

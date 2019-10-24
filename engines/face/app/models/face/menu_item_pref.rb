@@ -1,6 +1,6 @@
 module Face
   class MenuItemPref < ApplicationRecord
-    belongs_to :user, class_name: Face.user_class.to_s
+    belongs_to :user, class_name: Face.user_class_to_s
     validates :position, :menu, :position, :key, presence: true
     validates :user, presence: true, unless: proc { |pref| pref.admin }
     validates :user_id, uniqueness: { scope: %i[menu admin key] }

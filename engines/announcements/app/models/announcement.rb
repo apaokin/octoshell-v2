@@ -25,8 +25,8 @@ class Announcement < ApplicationRecord
   translates :title, :body
 
   has_many :announcement_recipients, dependent: :destroy
-  has_many :recipients, class_name: Announcements.user_class.to_s, source: :user, through: :announcement_recipients
-  belongs_to :created_by, class_name: Announcements.user_class.to_s
+  has_many :recipients, class_name: Announcements.user_class_to_s, source: :user, through: :announcement_recipients
+  belongs_to :created_by, class_name: Announcements.user_class_to_s
   mount_uploader :attachment, Announcements::AttachmentUploader
 
   validates_translated :body, :title, presence: true

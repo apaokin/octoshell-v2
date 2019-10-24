@@ -3,6 +3,10 @@ class SupportPreview
     ::Support::Mailer.new_ticket(Support::Ticket.first.id)
   end
 
+  def user_new_ticket
+    ::Support::Mailer.user_new_ticket(Support::Ticket.first.id)
+  end
+
   def new_ticket_reply
     ::Support::Mailer.new_ticket_reply(Support::Ticket.first.id, Support.user_class.first.id)
   end

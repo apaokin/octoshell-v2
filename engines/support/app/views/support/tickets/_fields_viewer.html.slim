@@ -35,7 +35,7 @@ javascript:
         data: {id: v},
         success: function(result){
           var field_container = $(`.field-container[field-id='${v}']`);
-          if(result.field_type == 'text'){
+          if(result.field_type == 'text' || result.field_type == 'markdown'){
             field_container.append($('div#text-field').html());
           }else{
             field_container.append($('div#select-field').html());

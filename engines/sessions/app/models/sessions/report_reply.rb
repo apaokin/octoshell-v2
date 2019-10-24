@@ -18,7 +18,7 @@
 module Sessions
   class ReportReply < ApplicationRecord
     belongs_to :report
-    belongs_to :user, class_name: Sessions.user_class.to_s
+    belongs_to :user, class_name: Sessions.user_class_to_s
 
     validates :report, :user, :message, presence: true
 

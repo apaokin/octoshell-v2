@@ -32,9 +32,25 @@ module Support
         fill_values(hash)
         # puts new_fields.inspect.red
         # puts topics_fields.inspect.green
-      else
+      elsif ticket.new_record?
         @topics_fields = ticket.topics_fields_to_fill
         define_methods_for_topics_fields(topics_fields)
+      else
+        @topics_fields = []
+        ticket.field_values.group_by(&:topics_field)
+              .each do |topics_field, field_values|
+          @topics_fields << topics_field
+          field_value = if topics_field.field.check_box?
+            field_values.map(&:value).map(&:to_i)
+          else
+            field_values[0].value
+          end
+            define_singleton_method(topics_field.id.to_s) do
+              field_value
+            end
+        end
+        @topics_fields += ticket.empty_topic_fields
+        define_methods_for_topics_fields(ticket.empty_topic_fields)
       end
     end
 
@@ -46,7 +62,12 @@ module Support
       end
     end
 
+    # def fill_value(topics_field_id:, **hash )
+    #   ticket.field_values
+    # end
+
     def fill_values(hash)
+      ticket.field_values.each(&:mark_for_destruction)
       hash.each do |topics_field_id, values|
         if values.is_a? Array
           present_values = values.select(&:present?)

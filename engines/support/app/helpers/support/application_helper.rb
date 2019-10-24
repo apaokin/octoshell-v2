@@ -62,15 +62,20 @@ module Support
       end
     end
 
-    def show_field_value(field_value, admin = false)
+    def show_field_value(field, field_values, admin = false)
 
-      return if field_value.value.blank?
+      # return if field_value.value.blank?
 
-      field = field_value.field
-      if field.model_collection.present?
+      # field = field_value.field
+      if field.check_box?
+        return field_values.map(&:field_option_name).join(', ')
+      end
+
+      field_value = field_values.first
+      if field.model_collection?
         model_field = ModelField.all[field.model_collection.to_sym]
-        instance = model_field.model.find(field_value.value)
-        return unless instance
+        instance = model_field.model.find_by_id(field_value.value)
+        return field_value.value unless instance
 
         human = instance.public_send(model_field.human)
         link_type = admin ? :admin_link : :user_link
@@ -82,8 +87,10 @@ module Support
         else
           instance.send(model_field.human)
         end
-      elsif field.field_options.to_a.any?
+      elsif field.radio?
         field_value.field_option_name
+      elsif field.markdown?
+        markdown field_value.value
       else
         field_value.value
       end

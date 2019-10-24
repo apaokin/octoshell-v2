@@ -8,7 +8,7 @@
     ActiveRecord::Base.connection.execute("TRUNCATE #{table} CASCADE")
   end
 
-
+  DecoratorReg.register_and_load!
   puts 'Running seeds'
   Group.default!
   # users = []

@@ -26,9 +26,10 @@
               span class="label label-#{state}" = ticket.human_state_name
             li class="text-muted"
               | #{Support::Ticket.human_attribute_name(:topic)}: #{ticket.topic.name_with_parents}
-            -ticket.select_field_values.each do |f_v|
+            -ticket.select_field_values.each do |field, field_values|
+              - next unless field
               li class="text-muted"
-                | #{f_v.field.name}:  #{show_field_value(f_v)}
+                | #{field.name}:  #{show_field_value(field, field_values)}
 
             /li
             /- if ticket.project.present?

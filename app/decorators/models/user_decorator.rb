@@ -22,7 +22,10 @@ User.class_eval do
   end
 
   scope :finder, (lambda do |q|
-    string = %w[profiles.last_name profiles.first_name profiles.middle_name email].join("||' '||")
+    # string = %w[profiles.last_name profiles.first_name profiles.middle_name email].join("||' '||")
+    string = 'concat(' +
+      %w[profiles.last_name profiles.first_name profiles.middle_name email].join(",' ',") +
+    ')'
     #!!! WARNING !!! Postgresql extension!!!
     joins(:profile).where("(#{string}) ILIKE ?", "%#{q}%")
     .order("profiles.last_name").includes(:profile).distinct(:id)

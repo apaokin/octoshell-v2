@@ -13,7 +13,7 @@
             /= ff.select field.id, options_for_select(field.field_options.map {|o| [o.name, o.id]}, cur),
             = ff.collection_select field.id, field.field_options, :id, :name,
               { label: field.name, include_blank: true, selected: cur}, multiple: field.check_box?
-          -elsif field.text?
+          -elsif field.scalar?
             = ff.text_field field.id,{ value: cur, label: field.name, include_blank: true }
           -elsif field.model_collection?
             -model_field =  Support::ModelField.all[field.model_collection.to_sym]

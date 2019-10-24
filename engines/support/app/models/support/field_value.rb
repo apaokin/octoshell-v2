@@ -32,11 +32,15 @@ module Support
     end
 
     def field
-      topics_field.field
+      topics_field&.field
     end
 
     def field_option_name
-      _field_option.name
+      _field_option&.name || value
+    end
+
+    def is_i?
+      value[/\A?\d+\z/] == value
     end
 
   end

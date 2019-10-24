@@ -20,7 +20,7 @@ module Support
       @search = Ticket.search(params[:q])
       @tickets = @search.result(distinct: true)
                         .preload({ reporter: :profile}, { responsible: :profile },
-                                  { field_values: {topics_field: {field: :field_options } }},
+                                  { field_values: [{topics_field: :field}, :_field_option]},
                                  :topic)
                         .order("support_tickets.id DESC, support_tickets.updated_at DESC")
                         .where(topic: [Topic.accessible_by(current_ability, :access)])
@@ -38,13 +38,26 @@ module Support
       @ticket = Ticket.new
     end
 
+    def continue
+      @ticket = Ticket.new(ticket_params)
+      if @ticket.show_form?
+        @field_values_form = Support::FieldValuesForm.new(@ticket)
+        @ticket.message = @ticket.template if @ticket.template.present?
+      end
+      render :new
+    end
+
+
     def create
       @ticket = Ticket.new(ticket_params)
       not_authorized_access_to(@ticket)
 
       @ticket.responsible = current_user
-      if @ticket.save
-        @ticket.subscribers << current_user
+      @field_values_form = Support::FieldValuesForm.new(@ticket, params[:ticket][:field_values])
+      valid = @field_values_form.valid?
+      if @ticket.valid? && valid
+        @ticket.save
+        @ticket.subscribers << current_user if current_user != @ticket.reporter
         redirect_to [:admin, @ticket]
       else
         render :new
@@ -74,14 +87,30 @@ module Support
     def edit
       @ticket = Ticket.find(params[:id])
       not_authorized_access_to(@ticket)
+      @field_values_form = Support::FieldValuesForm.new(@ticket)
     end
+
+    # @field_values_form = Support::FieldValuesForm.new(@ticket, params[:ticket][:field_values])
+    # valid = @field_values_form.valid?
+    # if @ticket.valid? && valid
+    #   @ticket.save
+    #   @ticket.subscribers << current_user
+    #   redirect_to [:admin, @ticket]
+    # else
+    #   render :new
+    # end
+
+
 
     def update
       @ticket = Ticket.find(params[:id])
       not_authorized_access_to(@ticket)
       respond_to do |format|
         format.html do
-          if @ticket.update(ticket_params)
+          @ticket.assign_attributes(ticket_params)
+          @field_values_form = Support::FieldValuesForm.new(@ticket, params[:ticket][:field_values])
+          valid = @field_values_form.valid?
+          if @ticket.valid? && valid
             @ticket.save
             redirect_to [:admin, @ticket]
           else
@@ -122,11 +151,11 @@ module Support
                                      :project_id, :cluster_id, :surety_id,
                                      :reporter_id, :responsible_id, :attachment,
                                      tag_ids: [],
-                                     subscriber_ids: [],
-                                     field_values_attributes: [ :id,
-                                                                :topics_field_id,
-                                                                :ticket_id,
-                                                                :value ] )
+                                     subscriber_ids: [])
+                                     # field_values_attributes: [ :id,
+                                     #                            :topics_field_id,
+                                     #                            :ticket_id,
+                                     #                            :value ] )
     end
   end
 end

@@ -11,9 +11,19 @@ module Pack::Admin
     end
 
     def index
-      @q = Pack::Access.ransack(params[:q] || { to_type_eq: '' })
-      @accesses = @q.result(distinct: true).order(:id).includes(:to, :who)
-      without_pagination(:accesses)
+      respond_to do |format|
+        format.html do
+          @q = Pack::Access.ransack(params[:q] || { to_type_eq: '' })
+          @accesses = @q.result(distinct: true).order(:id).includes(:to, :who)
+          without_pagination(:accesses)
+        end
+        format.json do
+          @accesses = Access.finder(params[:q])
+          render json: { records: @accesses.page(params[:page]).per(params[:per]),
+                         total: @accesses.count }
+
+        end
+      end
     end
 
     def show
