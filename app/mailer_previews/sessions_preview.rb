@@ -35,6 +35,13 @@ class SessionsPreview
     ::Sessions::Mailer.notify_experts_about_submitted_reports(Sessions::Session.first.id)
   end
 
+  def notify_experts_about_exceeded_time
+    session = Sessions::Session.first
+    expert = Sessions::Report.where.not(expert: nil).first.expert
+    ::Sessions::Mailer.notify_experts_about_exceeded_time(session.id, expert.id)
+  end
+
+
   def notify_expert_about_assessing_reports
     ::Sessions::Mailer.notify_expert_about_assessing_reports(Sessions::Session.first.id)
   end

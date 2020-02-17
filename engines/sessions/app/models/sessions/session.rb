@@ -20,7 +20,7 @@
 module Sessions
   class Session < ApplicationRecord
 
-    
+
 
     translates :description, :motivation
 
@@ -38,7 +38,8 @@ module Sessions
     has_many :users, class_name: "::User", through: :user_surveys
 
     has_many :stats
-
+    has_and_belongs_to_many :managers, join_table: 'sessions_managers',
+                                       class_name: '::User'
     validates :receiving_to, presence: true
     validates_translated :description, presence: true
 
@@ -162,6 +163,12 @@ module Sessions
         if expert.assesing_reports.any?
           Sessions::MailerWorker.perform_async(:notify_expert_about_assessing_reports, expert.id)
         end
+      end
+    end
+
+    def notify_experts_about_exceeded_time
+      managers.each do |manager|
+        Sessions::MailerWorker.perform_async(:notify_experts_about_exceeded_time,[id, manager.id])
       end
     end
   end

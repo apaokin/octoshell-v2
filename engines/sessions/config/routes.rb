@@ -31,6 +31,10 @@ Sessions::Engine.routes.draw do
 
       get :show_projects
       post :select_projects
+      get :edit_managers
+      patch :update_managers
+      post :notify_experts_about_exceeded_time
+
 
       resources :stats, expect: [:index, :show]
       resources :surveys, only: [:new, :create, :edit, :update]

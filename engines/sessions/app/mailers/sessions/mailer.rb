@@ -63,6 +63,25 @@ module Sessions
       mail to: expert_emails, subject: t(".subject", count: @submitted_reports.count)
     end
 
+    def notify_experts_about_exceeded_time(session_id, manager_id)
+      @session = Sessions::Session.find(session_id)
+      @user = User.find(manager_id)
+      submitted_reports = @session.reports.where(state: :submitted).count
+      accessing_reports = @user.assessing_reports.where(session: @session).count
+      count = submitted_reports + accessing_reports
+      msgs = []
+      if submitted_reports > 0
+        msgs <<  t('.msg_num_reports', session: @session.description, reports: submitted_reports)
+      end
+      if accessing_reports > 0
+        msgs <<  t('.msg_accessing_reports', session: @session.description, reports: accessing_reports)
+      end
+      return if msgs.empty?
+
+      @str = msgs.join(t('.delim'))
+      mail to: @user.email, subject: t(".subject", count: count)
+    end
+
     def notify_expert_about_assessing_reports(user_id)
       @user = Sessions.user_class.find(user_id)
       mail to: @user.email, subject: t(".subject", count: @user.assessing_reports.count)

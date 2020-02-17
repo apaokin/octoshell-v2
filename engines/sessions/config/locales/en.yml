@@ -210,12 +210,18 @@ en:
           session_is_successfully_created: >-
             Reregistration is created. Select projects that will participate in the
             re-registration.
+        edit_managers:
+          title: Choose experts for reregistration
+          managers: Participating experts
+
         index:
           new_session: Create re-registration
           title: Reregistrations list
         new:
           title: Reregistration creation
         show:
+          asessing_time_exceeded: Send messages about finishing consideration of all reports
+          edit managers: Edit participating experts
           edit_projects: Edit participating projects
           end_session: Finish
           ended_at: ended at %{date}
@@ -348,6 +354,15 @@ en:
           have not taken for evaluation yet and are awaiting consideration.
         msg_speedup_assessment: Please rate them as quickly as possible.
         subject: " %{count} reports are awaiting evaluation"
+      notify_experts_about_exceeded_time:
+        msg_main: Time for assessing reports of  "%{session}" reregistration is exceeded, but %{str}.
+        msg_num_reports: >-
+         %{reports} reports have not taken for evaluation yet and are awaiting consideration
+        msg_accessing_reports: u have  had %{reports} unrated reports
+        delim: " and "
+        msg_speedup_assessment: Please rate them as quickly as possible.
+        subject: " %{count} reports are awaiting evaluation"
+
       postdated_report_on_project:
         complete_report: Proceed to fill out the report.
         decline_submitting: I can not provide an adequate report text
@@ -357,7 +372,7 @@ en:
           Choose the appropriate reason and describe in detail the reason why you
           need to save the project.
         msg_postdated: >-
-          You have not sent a report №%{id} for the  %{pid}:"%{title}" project in 
+          You have not sent a report №%{id} for the  %{pid}:"%{title}" project in
           the «%{session}» re-registration in time.
         msg_project_blocked: >-
           According to the rules, your project is blocked. You can unblock it by filling

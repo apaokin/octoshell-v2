@@ -207,12 +207,17 @@ ru:
           session_is_successfully_created: >-
             Перерегистрация создана. Выберите проекты, которые будут участвовать в
             перерегистрации.
+        edit_managers:
+          title: Отобрать экспертов для перерегистрации
+          managers: Участвующие эксперты
         index:
           new_session: Создать перерегистрацию
           title: Список перерегистраций
         new:
           title: Создание перерегистрации
         show:
+          asessing_time_exceeded: Разослать сообщения об окончании проверки всех отчетов
+          edit_managers: Отобрать экспертов
           edit_projects: Отобрать проекты-участники
           end_session: Закончить
           ended_at: Закончилась %{date}
@@ -342,6 +347,14 @@ ru:
         msg_num_reports: >-
           Перерегистрация «%{session}» близится к завершению, но %{reports} отчетов
           еще не взяты на оценку и ожидают рассмотрения.
+        msg_speedup_assessment: Пожалуйста, оцените их как можно быстрее.
+        subject: В рамках перерегистрации %{count} отчетов ожидают оценки
+      notify_experts_about_exceeded_time:
+        msg_main: Время на оценку отчетов перерегистрации «%{session}» подошло к концу, но %{str}.
+        msg_num_reports: >-
+          %{reports} отчетов еще не взяты на оценку и ожидают рассмотрения
+        msg_accessing_reports: у вас на оценке находится еще %{reports} неоцененных отчетов
+        delim: ", и "
         msg_speedup_assessment: Пожалуйста, оцените их как можно быстрее.
         subject: В рамках перерегистрации %{count} отчетов ожидают оценки
       postdated_report_on_project:

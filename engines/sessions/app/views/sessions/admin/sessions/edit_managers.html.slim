@@ -1,0 +1,9 @@
+div class="page-header"
+  h1 = t(".title", default: "Managers")
+
+= bootstrap_form_for @session, url: admin_session_update_managers_path(@session), layout: :horizontal do |f|
+  /= f.autocomplete_field :manager_ids,{ label: t('.managers'), source: main_app.users_path, include_blank: true}, multiple: true do |val|
+  /  - User.find(val).full_name_with_email
+  = f.collection_check_boxes :manager_ids, User.experts.all, :id, :full_name_with_email, label: t('.managers')
+  = f.form_group do
+    = f.submit t("actions.save"), class: "btn btn-primary"

@@ -34,6 +34,23 @@ module Sessions
       @projects_involved_in_session_ids = @session.involved_project_ids
     end
 
+    def edit_managers
+      @session = Session.find(params[:session_id])
+    end
+
+    def update_managers
+      @session = Session.find(params[:session_id])
+      @session.manager_ids = params[:session][:manager_ids]
+      redirect_to [:admin, @session]
+    end
+
+    def notify_experts_about_exceeded_time
+      @session = Session.find(params[:session_id])
+      @session.notify_experts_about_exceeded_time
+      redirect_to [:admin, @session]
+    end
+
+
     def select_projects
       @session = Session.find(params[:session_id])
       @session.moderate_included_projects((params[:selected_project_ids] || []).map(&:to_i))
