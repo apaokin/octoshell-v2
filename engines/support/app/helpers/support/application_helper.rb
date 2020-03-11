@@ -62,6 +62,10 @@ module Support
       end
     end
 
+    def show_field_values(f_vs, admin = false)
+      f_vs.map { |f_v| show_field_value(f_v, admin) }.join(', ').html_safe
+    end
+
     def show_field_value(field_value, admin = false)
 
       return if field_value.value.blank?

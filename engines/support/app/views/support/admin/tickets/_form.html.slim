@@ -1,14 +1,10 @@
--if @ticket_require_edition
-  -if @new_fields.any?
-    p #{t('.new_fields', fields: @new_fields.map(&:field).map(&:name).join(','))}
-  -if @old_fields.any?
-    p #{t('.old_fields', fields: @old_fields.map(&:field).map(&:name).join(','))}
-
+- if @field_values_form.old_fields.any?
+  div style='color: rgb(138, 109, 59);'
+    = t('.old_fields', fields: @field_values_form.old_fields.map(&:field).map(&:name).join(', '))
 = bootstrap_form_for [:admin, @ticket], layout: :horizontal, multipart: true do |f|
   = f.autocomplete_field :reporter_id, source:  main_app.users_path do |id|
     -User.find(id).full_name_with_email
   = f.collection_select :responsible_id, User.support, :id, :full_name_with_email unless @ticket.new_record?
-  /= f.text_field :topic, value: @ticket.topic.name_with_parents,readonly: true
   = f.collection_select :topic_id, Support::Topic.accessible_by(current_ability, :access).leaf_topics, :id, :name_with_parents
   = f.hidden_field :previous_topic_id, value: @ticket.topic_id
 
@@ -17,9 +13,6 @@
   = markdown_area f,:message, rows: 14
 
   = f.file_field :attachment
-  = autocomplete f, name: :project_id, label: Support::Ticket.human_attribute_name(:project), source: core.projects_path, include_blank: true
-  = f.collection_select :cluster_id, Core::Cluster.all, :id, :name, { label: Support::Ticket.human_attribute_name(:cluster), include_blank: true}, {}
-  = f.collection_select :surety_id, Core::Surety.all, :id, :name, label: Support::Ticket.human_attribute_name(:surety), include_blank: true
   = render 'support/tickets/new_field_value_form', f: f, admin: true
   = f.form_group do
     = f.submit t("actions.save")

@@ -20,7 +20,6 @@ module Support
       @ticket = current_user.tickets.build(ticket_params)
       if @ticket.show_form?
         init_field_values_form
-        # @field_values_form = Support::FieldValuesForm.new(@ticket)
       end
       @ticket.message = @ticket.template if @ticket.template.present?
       render :new
@@ -30,7 +29,6 @@ module Support
       @ticket = current_user.tickets.build(ticket_params)
       @ticket.tags << @ticket.topic.tags
       init_field_values_form
-      # @field_values_form = Support::FieldValuesForm.new(@ticket, params[:ticket][:field_values])
       valid = @field_values_form.valid?
       if @ticket.valid? && valid
         @ticket.save
@@ -111,12 +109,13 @@ module Support
     end
 
     def setup_default_filter
-      params[:q] ||= { state_not_in: ["closed"] }
+      params[:q] ||= { state_not_in: ["closed"],
+                       contains_all_fields: Field.where(search: true).ids }
       params[:meta_sort] ||= "id.asc"
     end
 
     def init_field_values_form
-      second_arg = params[:ticket] && params[:ticket][:field_values]
+      second_arg = params[:ticket] && params[:ticket][:field_values] || {}
       @field_values_form = Support::FieldValuesForm.new(@ticket, second_arg)
     end
   end

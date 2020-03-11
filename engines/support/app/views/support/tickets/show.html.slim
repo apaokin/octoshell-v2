@@ -61,22 +61,11 @@ div class="well btn-toolbar"
     div class="col-xs-6 col-md-6"
       = @ticket.cluster.present? ? link_to(@ticket.cluster, core.admin_cluster_path(@ticket.cluster)) : ''
 
-  - @ticket.field_values.each do |field_value|
-    /- if field_value.value.present?
-    div class="col-md-6 col-xs-12" class="#{field_value.value.present? ? '' : 'hidden'}"
-      div class="col-xs-6 col-md-6"
-        = field_value.field.present? ? field_value.field.name : "N/A"
-      div class="col-xs-6 col-md-6"
-        = field_value.field.present? ? show_field_value(field_value) : ''
-    /- else
-      div class="col-md-6 col-xs-12" class="hidden"
-        div class="col-xs-6 col-md-6" = field_value.field.present? ? field_value.field.name : "N/A"
-        div class="col-xs-6 col-md-6"
-
-  - if @ticket.has_blank_fields?
-    div class="col-md-6 col-xs-12" class="link"
-      td colspan="2"
-        small = link_to t("actions.show_empty_fields"), "#", id: "empty-fields-opener"
+  - @ticket.field_values.group_by(&:topics_field).each do |t_f,f_vs|
+    div class="col-xs-6 col-md-6"
+      = t_f.field.name
+    div class="col-xs-6 col-md-6"
+      = show_field_values(f_vs)
 
 div class="panel panel-default" id="reply"
   div class="panel-heading"

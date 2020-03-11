@@ -27,6 +27,10 @@ table class="table table-bordered"
   tr
     th = Support::Field.human_attribute_name(:model_collection)
     td = @field.model_collection
+  tr
+    th = Support::Field.human_attribute_name(:search)
+    td = @field.search
+
 -if @field.field_options.any?
   h3 = Support::Field.human_attribute_name(:field_options)
   table class="table table-bordered"

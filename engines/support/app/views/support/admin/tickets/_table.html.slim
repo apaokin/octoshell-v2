@@ -32,9 +32,12 @@
               span class="label label-#{state}" = ticket.human_state_name
             li class="text-muted"
               | #{Support::Ticket.human_attribute_name(:topic)}: #{ticket.topic.name_with_parents}
-            -ticket.select_field_values.each do |f_v|
+            - ticket.field_values.group_by(&:topics_field).each do |t_f,f_vs|
               li class="text-muted"
-                | #{f_v.field.name}:  #{show_field_value(f_v, :admin)}
+                | #{t_f.field.name}:  #{show_field_values(f_vs, :admin)}
+            /-ticket.select_field_values.each do |f_v|
+            /  li class="text-muted"
+            /    | #{f_v.field.name}:  #{show_field_value(f_v, :admin)}
             /- if ticket.project.present?
             /  li
             /    | #{Support::Ticket.human_attribute_name(:project)}: #{link_to ticket.project, core.admin_project_path(ticket.project)}

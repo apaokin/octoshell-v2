@@ -3,7 +3,7 @@ namespace :support do
     Support::Notificator.new.create_bot(args[:pass])
   end
 
-  task october_migration: :environment do
+  task fill_topics_field: :environment do
     ActiveRecord::Base.transaction do
       Support::FieldValue.where(value: ['', nil]).destroy_all
       Support::FieldValue.all.each do |field_value|

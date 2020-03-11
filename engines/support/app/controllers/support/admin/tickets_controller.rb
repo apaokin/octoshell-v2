@@ -26,6 +26,7 @@ module Support
                         .where(topic: [Topic.accessible_by(current_ability, :access)])
       without_pagination(:tickets)
       # записываем отрисованные тикеты в куки, для перехода к следующему тикету после ответа
+
       cookies[:tickets_list] = @tickets.map(&:id).join(',')
     end
 
@@ -35,8 +36,8 @@ module Support
     end
 
     def new
-      @ticket = Ticket.new
-      # init_field_values_form
+      @ticket = Ticket.new(params[:ticket] ? ticket_params : {})
+
     end
 
     def create
@@ -44,11 +45,7 @@ module Support
       not_authorized_access_to(@ticket)
       init_field_values_form
       @ticket.responsible = current_user
-
-      # init_field_values_form
-      # @field_values_form = Support::FieldValuesForm.new(@ticket, params[:ticket][:field_values])
-
-      if ticket_params.keys.count <= 1
+      if ticket_params.keys.count <= 3
         render :new
       elsif @ticket.valid? && @field_values_form.valid?
         @ticket.save!
@@ -123,8 +120,6 @@ module Support
 
     def render_edit_in_update
       if ticket_require_edition?
-        @new_fields = @ticket.new_fields(@previous_topic_id)
-        @old_fields = @ticket.old_fields(@previous_topic_id)
         @ticket_require_edition = true
       end
       render :edit
@@ -151,11 +146,12 @@ module Support
     end
 
     def setup_default_filter
-      params[:q] ||= { state_in: ["pending", "answered_by_reporter"] }
+      params[:q] ||= { state_in: ["pending", "answered_by_reporter"],
+                       contains_all_fields: Field.where(search: true).ids }
     end
 
     def init_field_values_form
-      second_arg = params[:ticket] && params[:ticket][:field_values]
+      second_arg = params[:ticket] && params[:ticket][:field_values] || {}
       @field_values_form = Support::FieldValuesForm.new(@ticket, second_arg)
     end
 

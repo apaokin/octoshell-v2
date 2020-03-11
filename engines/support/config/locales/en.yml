@@ -21,10 +21,16 @@ en:
     attributes:
       support/field:
         contains_source_code: The field will contain the source code (logs)
+        field_options: Field options
         hint: 'Tip to the user: what to enter as the field value'
+        kind: Kind
+        model_collection: Link to object
         name: Name
         required: required
+        search: Included in request search by default
         url: Content as a link
+      support/field_option:
+        name: Name
       support/reply:
         attachment: Attachment
         author: Author
@@ -68,6 +74,7 @@ en:
         name: Name
         parent: Parent topic
         parent_id: Parent topic
+        permissions: Permissions
         tag_ids: Default tags
         tags: Default tags
         template: Template
@@ -76,11 +83,19 @@ en:
         required: Attach automically
     errors:
       models:
+        support/field:
+          attributes:
+            kind:
+              collection_present: You can not choose this kind of field if there is
+                a link to object.
+              field_options_present: You can not choose this kind of field if there
+                are field options.
         support/ticket:
-          equal_to_template: Change your problem description  (it is equal
-            to template now)
+          equal_to_template: Change your problem description  (it is equal to template
+            now)
     models:
       support/field: Extra field
+      support/field_option: Field option
       support/reply: Reply
       support/reply_template: Reply template
       support/tag: Tag
@@ -101,10 +116,12 @@ en:
   support:
     admin:
       fields:
-        form:
-          model_collection: This field will contain link to an object of class
         edit:
           title: Edit extra field
+        form:
+          add_option: Add option
+          model_collection: This field will contain link to an object of class
+          remove_option: Remove option
         index:
           new_field: Create extra field
           title: Extra fields for requests
@@ -145,6 +162,8 @@ en:
       tickets:
         edit:
           title: Edit request
+        form:
+          old_fields: "These fields will be removed after change of topic: %{fields}"
         index:
           created_after: Сreated after
           created_before: Created before
@@ -156,11 +175,14 @@ en:
           updated_after: Updated after
           updated_before: Updated before
         new:
+          choose_topic: Choose topic
           title: Create request for user
         show:
           accept: Accept
           attach: Attach file
           create_reply_template: Create reply template from current reply
+          create_ticket_from_reply: Create new request from this reply
+          message_preview: Preview
           new_reply: New reply
           no_replies: No replies
           problem_solved: If your problem is solved, press
@@ -175,9 +197,9 @@ en:
         edit:
           title: Edit support topic
         form:
-          attach: Attach
           add_responsible: Add responsible
-
+          attach: Attach
+          remove_responsible: Remove responsible
         index:
           new_topic: Create topic
           title: Requests topics
@@ -200,21 +222,27 @@ en:
         subject: New request for technical support
         ticket: Question
         topic: Topic
-        user_created_request: User %{full_name} has created the request for
-          techincal support.
+        user_created_request: User %{full_name} has created the request for techincal
+          support.
       new_ticket_reply:
         remain: >-
-          Do not remove this line! You can add your reply to this request
-          by writing it after the following dash line.
+          Do not remove this line! You can add your reply to this request by writing
+          it after the following dash line.
         show_request_details: Show request
         subject: New reply in request No%{number}
       reply_error:
         errors: 'Errors:'
         show_request_details: Show request
         subject: Your reply for request  №%{number} is incorrect
+        topic: Topic
+    notificator:
+      test_index:
+        ddd: Ddd
     tickets:
       edit:
         title: Edit request
+      fields_form:
+        contains_all_fields: Choose field to search by
       index:
         created_after: Created after
         created_before: Created before
@@ -228,6 +256,7 @@ en:
         attach: 'Attach file: '
         earlier: 'Earlier: '
         if_not: 'If not, press '
+        message_preview: Предпросмотр
         new_reply: New reply
         no_replies: No replies
         problem_solved: 'Have your problem been solved? Press '

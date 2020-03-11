@@ -24,6 +24,8 @@ RSpec.configure do |config|
   config.include Sorcery::TestHelpers::Rails::Controller, type: :controller
   config.include Sorcery::TestHelpers::Rails::Integration, type: :feature
   config.include PackHelpers
+  config.include Support::SpecHelpers
+
   # config.include(Shoulda::Matchers::ActiveModel, type: :model)
   # config.include(Shoulda::Matchers::ActiveRecord, type: :model)
 

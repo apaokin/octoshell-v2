@@ -284,6 +284,10 @@ module Support
            .uniq(&:field_id)
     end
 
+    def all_fields
+      topics_fields_to_fill.includes(:field).map(&:field)
+    end
+
     def old_fields(topic_id)
       Support::Topic.all_fields(topic_id) - topics_fields_to_fill
     end

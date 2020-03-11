@@ -53,13 +53,6 @@ div class="page-header"
           = Support::Ticket.human_attribute_name(:reporter_logins)
           | :
           = @ticket.reporter_logins
-        td
-          - if @ticket.cluster.present?
-            = Support::Ticket.human_attribute_name(:cluster)
-            | :
-            = link_to @ticket.cluster, core.admin_cluster_path(@ticket.cluster)
-          - else
-            | &nbsp;
       - if @ticket.url.present?
         tr
           td
@@ -72,35 +65,12 @@ div class="page-header"
             = Support::Ticket.human_attribute_name(:attachment)
           td
             = link_to_attachment(@ticket)
-      - if @ticket.project.present?
-        tr
-          td
-            = Support::Ticket.human_attribute_name(:project)
-            | :
-            = link_to @ticket.project, core.admin_project_path(@ticket.project)
-          td
-            = Support::Ticket.human_attribute_name(:project_id)
-            | :
-            = @ticket.project.id
-
-      - if @ticket.cluster.present?
-        tr
-          td
-            = Support::Ticket.human_attribute_name(:cluster)
-          td
-            = link_to @ticket.cluster, core.admin_cluster_path(@ticket.cluster)
-
-      - @ticket.field_values.each do |field_value|
-        - if field_value.value.present?
+      - @ticket.field_values.group_by(&:topics_field).each do |t_f,f_vs|
           tr
             td
-              = field_value.field.present? ? field_value.field.name : "N/A"
+              = t_f.field.present? ? t_f.field.name : "N/A"
             td
-              =  field_value.field.present? ? show_field_value(field_value, :admins) : ''
-
-    /- if @ticket.has_blank_fields?
-      div class="col-xs-12 link"
-        small = link_to t("actions.show_empty_fields"), "#", id: "empty-fields-opener"
+              =  show_field_values(f_vs, :admin)
 
 
 div.row
@@ -179,10 +149,13 @@ h3 = Support::Ticket.human_attribute_name(:replies)
         blockquote class="#{reply.author_id == reply.ticket.reporter_id ? "admin" : "user"}"
           = markdown(reply.message)
           div class="raw-reply" = reply.message
-          = link_to t("actions.show_as_text"), "#", class: "raw-text-opener"
+            = link_to t("actions.show_as_text"), "#", class: "raw-text-opener"
           - if reply.attachment?
             small = Support::Reply.human_attribute_name(:attachment)
             p = link_to_attachment reply
+      div class="col-xs-2"
+        = link_to t(".create_ticket_from_reply"),new_admin_ticket_path(ticket: {message: reply.message, reporter_id: reply.author_id}) , class: "btn btn-success"
+
   div class="row panel panel-default" id="reply"
     div class="panel-heading"
       h4

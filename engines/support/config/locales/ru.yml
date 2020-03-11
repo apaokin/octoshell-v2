@@ -21,13 +21,14 @@ ru:
     attributes:
       support/field:
         contains_source_code: Поле будет содержать исходный код (логи)
+        field_options: Опции поля
         hint: 'Подсказка пользователю: что вводить в качестве значения поля'
         kind: Вид
+        model_collection: Ссылка на объект
         name: Название
         required: Обязательное поле
+        search: Включена в поиск по заявкам по умолчанию
         url: Содержимое оформить как ссылку
-        field_options: Опции поля
-        model_collection: Ссылка на объект
       support/field_option:
         name: Название
       support/reply:
@@ -73,6 +74,7 @@ ru:
         name: Наименование
         parent: Родительская тема
         parent_id: Родительская тема
+        permissions: Права на работу с темой
         tag_ids: Теги по-умолчанию
         tags: Теги по-умолчанию
         template: Шаблон
@@ -81,18 +83,19 @@ ru:
         required: Ответственный по умолчанию
     errors:
       models:
-        support/ticket:
-          equal_to_template: Измените описание проблемы (сейчас там шаблон)
         support/field:
           attributes:
             kind:
-              collection_present: Нельзя выбрать такой вид поля при условии существования ссылки на объект класса в данном поле.
-              field_options_present: Нельзя выбрать такой вид поля при условии существования опций поля для данного класса.
-
+              collection_present: >-
+                Нельзя выбрать такой вид поля при условии существования ссылки на
+                объект класса в данном поле.
+              field_options_present: Нельзя выбрать такой вид поля при условии существования
+                опций для данного поля.
+        support/ticket:
+          equal_to_template: Измените описание проблемы (сейчас там шаблон)
     models:
       support/field: Дополнительное поле
       support/field_option: Опция поля
-
       support/reply: Ответ
       support/reply_template: Шаблон ответа
       support/tag: Тег
@@ -108,18 +111,17 @@ ru:
   errors:
     messages:
       size_too_big: 'файл слишком большой (максимальный размер: %{file_size})'
-      size_too_small: файл слишком малого размера (должен быть как минимум
-        %{file_size})
+      size_too_small: файл слишком малого размера (должен быть как минимум %{file_size})
       wrong_size: размер файла некорректен (должен быть %{file_size})
   support:
     admin:
       fields:
-        form:
-          model_collection: Поле будет содержать ссылку на объект класса
-          remove_option: Удалить опцию
-          add_option: Добавить опцию
         edit:
           title: Редактирование доп. поля
+        form:
+          add_option: Добавить опцию
+          model_collection: Поле будет содержать ссылку на объект класса
+          remove_option: Удалить опцию
         index:
           new_field: Создать дополнительное поле
           title: Дополнительные поля для заявок
@@ -160,6 +162,8 @@ ru:
       tickets:
         edit:
           title: Редактирование заявки
+        form:
+          old_fields: "Следующие поля будут удалены при изменении темы заявки: %{fields}"
         index:
           created_after: Создан после
           created_before: Создан до
@@ -171,11 +175,14 @@ ru:
           updated_after: Обновлён после
           updated_before: Обновлён до
         new:
+          choose_topic: Выберите тему
           title: Новая заявка на пользователя
         show:
           accept: Принять в работу
           attach: Приложить файл
           create_reply_template: Создать шаблон из текущего сообщения
+          create_ticket_from_reply: Создать заявку из ответа
+          message_preview: Предпросмотр
           new_reply: Новое сообщение
           no_replies: Нет сообщений
           problem_solved: Проблема решена? Нажмите
@@ -184,15 +191,15 @@ ru:
           send_and_show_result: Отправить и показать результат
           tags-etc: Теги/файлы/комментарии
           title: Заявка №%{id}
-          message_preview: Предпросмотр
         table:
           no_tickets: Нет тикетов
       topics:
         edit:
           title: Редактирование темы заявок
         form:
-          attach: Прикрепить
           add_responsible: Добавить ответственного
+          attach: Прикрепить
+          remove_responsible: Удалить ответственного
         index:
           new_topic: Создать тему
           title: Темы заявок
@@ -205,8 +212,7 @@ ru:
       answered_tickets_notification:
         subject: Напоминание о зависших заявках в техподдержке
       footer:
-        maintained_by: Лаборатория Параллельных информационных технологий
-          НИВЦ МГУ.
+        maintained_by: Лаборатория Параллельных информационных технологий НИВЦ МГУ.
         octo_regards: С уважением, Octoshell.
       header:
         hello_known_name: Здравствуйте, %{name}!
@@ -219,18 +225,23 @@ ru:
         user_created_request: Пользователь %{full_name} создал заявку в поддержку.
       new_ticket_reply:
         remain: >-
-          Не удаляйте эту строку! Вы можете добавить ответ к этой заявке,
-          записав Ваш ответ после следующей пунктирной линии.
+          Не удаляйте эту строку! Вы можете добавить ответ к этой заявке, записав
+          Ваш ответ после следующей пунктирной линии.
         show_request_details: Перейти к заявке
         subject: Новый ответ в заявке №%{number}
       reply_error:
         errors: 'Ошибки:'
         show_request_details: Перейти к заявке
-        subject: Не удалось оставить ответ к  заявке №%{number} по причине
-          ошибок
+        subject: Не удалось оставить ответ к  заявке №%{number} по причине ошибок
+        topic: Topic
+    notificator:
+      test_index:
+        ddd: Ddd
     tickets:
       edit:
         title: Редактирование заявки
+      fields_form:
+        contains_all_fields: Искать по полям
       index:
         created_after: Создан после
         created_before: Создан до
@@ -244,11 +255,11 @@ ru:
         attach: 'Приложить файл: '
         earlier: 'Ранее: '
         if_not: Если нет, нажмите
+        message_preview: Предпросмотр
         new_reply: Новое сообщение
         no_replies: Нет ответов
         problem_solved: 'Проблема решена? Нажмите '
         title: Заявка №%{id}
-        message_preview: Предпросмотр
       table:
         no_tickets: Нет заявок в поддержку
   support_responsible_for: 'Ответственный за:'
