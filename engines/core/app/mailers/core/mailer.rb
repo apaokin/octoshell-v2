@@ -68,23 +68,6 @@ module Core
       mail to: admin_emails, subject: t(".subject", org_title: @department.organization.short_name)
     end
 
-    def surety_confirmed(surety_id)
-      @surety = Core::Surety.find(surety_id)
-      admin_emails = Core.user_class.superadmins.map(&:email)
-      mail to: admin_emails, subject: t(".subject", number: @surety.id)
-    end
-
-    def surety_accepted(surety_id)
-      @surety = Core::Surety.find(surety_id)
-      @user = @surety.author
-      mail to: @user.email, subject: t(".subject", number: @surety.id)
-    end
-
-    def surety_rejected(surety_id)
-      @surety = Core::Surety.find(surety_id)
-      @user = @surety.author
-      mail to: @user.email, subject: t(".subject", number: @surety.id)
-    end
 
     def user_access_suspended(user_id)
       @user = Core.user_class.find(user_id)

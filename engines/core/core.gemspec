@@ -39,7 +39,9 @@ Gem::Specification.new do |s|
 
   s.add_dependency "nokogiri", ">= 1.10.4"
   s.add_dependency "mini_magick", ">= 4.9.4"
+  # s.add_dependency "sureties"
 
+  # gem 'sureties', path: 'engines/sureties'
 
   s.test_files = Dir["spec/**/*"]
 

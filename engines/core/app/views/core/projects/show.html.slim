@@ -29,4 +29,5 @@ legend = Core::Project.human_attribute_name :card
 = render "members"
 - if @user_can_manage_project
   = render "invited_users"
-= render "sureties"
+- if defined?(::Sureties)
+  = render "sureties"

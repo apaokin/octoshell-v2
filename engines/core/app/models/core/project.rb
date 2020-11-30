@@ -59,12 +59,12 @@ module Core
 
     has_many :synchronization_logs, class_name: "Core::ClusterLog", inverse_of: :project
 
-    has_many :sureties, inverse_of: :project
+    # has_many :sureties, inverse_of: :project
 
     has_many :invitations, class_name: "Core::ProjectInvitation"
 
 
-    accepts_nested_attributes_for :card, :sureties
+    accepts_nested_attributes_for :card
 
     validates :card, :title, :organization, :kind, presence: true, if: :project_is_not_closing?
     validates :direction_of_science_ids, :critical_technology_ids,
@@ -75,10 +75,6 @@ module Core
 
     scope :finder, lambda { |q| where("lower(title) like :q", q: "%#{q.mb_chars.downcase}%").order("title asc") }
 
-    def members_for_new_surety
-      members.joins(:user).where(project_access_state: :engaged,
-                                  users: { access_state: 'active'})
-    end
 
     after_create :engage_owner
 

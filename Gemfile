@@ -98,3 +98,5 @@ group :test do
   gem "codeclimate-test-reporter", require: false
 end
 gem 'sprockets-rails', '2.3.3'
+
+# gem 'sureties', path: 'engines/sureties'

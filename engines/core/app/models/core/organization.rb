@@ -23,7 +23,8 @@ module Core
   class Organization < ApplicationRecord
     octo_use(:stat_class, :sessions, 'Stat')
     remove_spaces :name
-    MERGED_ASSOC = [Employment, Member, Project, SuretyMember].freeze
+    MERGED_ASSOC = [Employment, Member, Project]
+    MERGED_ASSOC << ::Sureties::SuretyMember if defined?(::Sureties) 
     include MergeOrganzations
     include Checkable
     belongs_to :kind, class_name: "Core::OrganizationKind", foreign_key: :kind_id
@@ -39,7 +40,6 @@ module Core
 
     has_many :members, inverse_of: :organization
 
-    has_many :surety_members, inverse_of: :organization
     if Octoface.role_class?(:sessions, 'Stat')
       has_many :sessions_stats, inverse_of: :organization, class_name: stat_class.to_s
     end
@@ -68,6 +68,8 @@ module Core
 
     def can_edit?(current_user)
       main_user = employments.order(:created_at).first.try(:user)
+      puts employments.order(:created_at).to_a.inspect.red
+      puts main_user.inspect.red
       main_user == current_user
     end
 

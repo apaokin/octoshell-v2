@@ -8,8 +8,6 @@ module Core
                            'admin/project_kinds', 'admin/direction_of_sciences',
                            'admin/critical_technologies', 'admin/research_areas',
                            'admin/group_of_research_areas')
-    add_ability(:manage, :sureties, 'superadmins')
-    add_controller_ability(:manage, :sureties, 'admin/sureties')
     add_ability(:manage, :requests, 'superadmins')
     add_controller_ability(:manage, :requests, 'admin/requests')
     add_ability(:manage, :organizations, 'superadmins')
@@ -50,17 +48,6 @@ module Core
                    core.admin_projects_path,
                    'core/admin/projects')
         end
-
-        sureties_count = Core::Surety.where(state: :confirmed).count
-        sureties_title = if sureties_count.zero?
-                           t("admin_submenu.sureties")
-                         else
-                           t("admin_submenu.sureties_with_count.html", count: sureties_count).html_safe
-                         end
-
-         add_item_if_may('sureties', sureties_title,
-                  core.admin_sureties_path,
-                  'core/admin/sureties')
 
          requests_count = Core::Request.where(state: :pending).count
          requests_title = if requests_count.zero?

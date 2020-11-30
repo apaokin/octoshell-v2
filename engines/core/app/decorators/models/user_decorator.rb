@@ -66,10 +66,6 @@ Core.user_class.class_eval do
     source: :organization,
     inverse_of: :users
 
-  has_many :surety_members, class_name: "::Core::SuretyMember", dependent: :destroy
-  has_many :sureties, through: :surety_members, class_name: "::Core::Surety"
-
-  has_many :authored_sureties, class_name: "::Core::Surety", foreign_key: :author_id, inverse_of: :author
 
   has_many :bot_links,
     class_name: "::Core::BotLink",

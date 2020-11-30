@@ -1,0 +1,48 @@
+div class="page-header"
+  h1 = @surety
+
+- if can? :manage, :sureties
+  div class="well btn-toolbar"
+    - if @surety.confirmed?
+      div class='row'
+        = bootstrap_form_for @surety,url: admin_surety_activate_or_reject_path(@surety),method: :put,layout: :inline do |f|
+          =f.submit Sureties::Surety.human_state_event_name(:activate),class: "btn btn-success"
+          =f.submit Sureties::Surety.human_state_event_name(:reject),class: "btn btn-primary"
+          =f.text_area :reason
+    - else
+      = link_to Sureties::Surety.human_state_event_name(:close), admin_surety_close_path(@surety), class: "btn btn-danger", method: :put, data: { confirm: t("actions.confirm") }
+table class="table table-bordered"
+  tr
+    th = Core::Project.model_name.human
+    td = link_to @surety.project, core.admin_project_path(@surety.project)
+  tr
+    th = Core::Organization.model_name.human
+    td = link_to @surety.organization, core.admin_organization_path(@surety.organization)
+  tr
+    th = Sureties::Surety.human_attribute_name(:author)
+    td
+      = link_to @surety.author.full_name, main_app.admin_user_path(@surety.author)
+  tr
+    th = Sureties::Surety.human_attribute_name(:state)
+    td
+      - state = { "generated"=> "primary", "confirmed"=> "warning", "active"=> "success", "closed"=> "danger", "rejected" => "danger" }[@surety.state_name.to_s]
+      span class="label label-#{state}" = @surety.human_state_name
+  tr
+    th = Sureties::Surety.human_attribute_name(:document)
+    td = link_to @surety.document.file.filename, @surety.document.url if @surety.document.present?
+  -if @surety.reason.present?
+    tr
+      th = Sureties::Surety.human_attribute_name(:reason)
+      td =  @surety.reason
+  -if @surety.changed_by
+      tr
+        th = Sureties::Surety.human_attribute_name(:changed_by)
+        td = link_to @surety.changed_by.full_name, main_app.admin_user_path(@surety.changed_by)
+
+
+- if @surety.scans.any?
+  div class="row"
+    h3 = Sureties::Surety.human_attribute_name(:scans)
+    - @surety.scans.each do |scan|
+      div class="col-xs-4"
+        = link_to image_tag(scan.image.path), scan.image.url, target: :blank, class: "thumbnail"

@@ -26,7 +26,7 @@
 
 module Core
   class Member < ApplicationRecord
-
+    puts 'Member'.inspect.red
     belongs_to :user, class_name: Core.user_class.to_s, foreign_key: :user_id, inverse_of: :accounts
     belongs_to :project, inverse_of: :members
     belongs_to :organization
@@ -45,26 +45,26 @@ module Core
     include ::AASM_Additions
     aasm(:project_access_state, :column => :project_access_state) do
       state :invited, :initial => true   # приглашён, не подтвердил участие
-      state :engaged   # принял приглашение (заполнил организации)
-      state :unsured   # упомянут в ещё не активированном поручительстве
+      # state :engaged   # принял приглашение (заполнил организации)
+      # state :unsured   # упомянут в ещё не активированном поручительстве
       state :allowed   # поручительство подписано и одобрено администрацией
       state :denied
       state :suspended # участие приостановлено, т.к. проект неактивен
 
       event :accept_invitation do
-        transitions :from => :invited, :to => :engaged
+        transitions :from => :invited, :to => :allowed
       end
 
-      event :append_to_surety do
-        transitions :from => :engaged, :to => :unsured
-      end
-
-      event :substract_from_surety do
-        transitions :from => [:allowed, :unsured], :to => :engaged
-      end
+      # event :append_to_surety do
+      #   transitions :from => :engaged, :to => :unsured
+      # end
+      #
+      # event :substract_from_surety do
+      #   transitions :from => [:allowed, :unsured], :to => :engaged
+      # end
 
       event :activate do
-        transitions :from => [:unsured, :suspended], :to => :allowed
+        transitions :from => :suspended, :to => :allowed
 
         after do
           if aasm(:project_access_state).from_state==:unsured

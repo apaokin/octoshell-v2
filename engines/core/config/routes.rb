@@ -24,23 +24,6 @@ Core::Engine.routes.draw do
       resources :requests, only: [:new, :create]
     end
 
-    resources :sureties do
-      collection do
-        post :find
-        get :template,     action: :edit_template
-        put :template,     action: :update_template
-        put :default,      action: :default_template
-        put :rtf_template
-        put :default_rtf
-        get :rtf_template, action: :download_rtf_template
-      end
-      put :activate
-      put :close
-      put :confirm
-      put :reject
-      put :activate_or_reject
-    end
-
     resources :project_kinds
     resources :organization_kinds
 

@@ -27,7 +27,8 @@ legend = Core::Project.human_attribute_name :card
   = render "requests", requests: @project.requests.where(:state=>[:pending, :closed])
 
 = render "core/admin/projects/members"
-= render "core/admin/projects/sureties"
+- if defined?(::Sureties)
+  = render "core/admin/projects/sureties"
 = custom_helper(:comments, :render_attachments,@project,:comments)
 = custom_helper(:comments, :render_attachments,@project,:tags)
 = custom_helper(:comments, :render_attachments,@project,:files)
