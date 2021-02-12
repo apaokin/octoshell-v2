@@ -46,6 +46,7 @@ class ApplicationRecord < ActiveRecord::Base
     return record if record
 
     record = new(names)
+    puts names.inspect.green
     main_name = "name_#{I18n.locale}"
     unless record.public_send(main_name)
       record.public_send("#{main_name}=", names.values.compact.first)

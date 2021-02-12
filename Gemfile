@@ -99,4 +99,4 @@ group :test do
 end
 gem 'sprockets-rails', '2.3.3'
 
-# gem 'sureties', path: 'engines/sureties'
+gem 'sureties', path: 'engines/sureties'

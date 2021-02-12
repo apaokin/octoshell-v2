@@ -1,3 +1,5 @@
+h1 aaa
+
 div class="row" id="sureties"
   div class="panel panel-default"
     div class="panel-heading"
@@ -9,7 +11,7 @@ div class="row" id="sureties"
         th = Sureties::Surety.human_attribute_name(:state)
         th = Sureties::Surety.human_attribute_name(:scans)
         th = Sureties::Surety.human_attribute_name(:created_at)
-      - @project.sureties.preload(members: :profile).each do |surety|
+      - project.sureties.preload(members: :profile).each do |surety|
         - state = { generated: "primary", confirmed: "warning", active: "success", closed: "danger" }.fetch(surety.state,"danger")
         tr
           td = link_to surety, sureties.admin_surety_path(surety)

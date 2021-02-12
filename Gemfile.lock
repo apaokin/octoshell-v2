@@ -232,6 +232,12 @@ PATH
       slim
 
 PATH
+  remote: engines/sureties
+  specs:
+    sureties (0.1.0)
+      rails (~> 5.2.4, >= 5.2.4.4)
+
+PATH
   remote: engines/wikiplus
   specs:
     wikiplus (0.0.1)
@@ -784,6 +790,7 @@ DEPENDENCIES
   sqlite3
   statistics!
   support!
+  sureties!
   therubyracer
   traco
   uglifier (>= 1.3.0)

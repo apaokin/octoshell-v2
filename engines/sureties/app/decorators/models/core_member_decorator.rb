@@ -1,5 +1,4 @@
 Core::Member.class_eval do
-  puts 'Decorator'.inspect.red
   aasm(:project_access_state, :column => :project_access_state) do
     state :engaged   # принял приглашение (заполнил организации)
     state :unsured   # упомянут в ещё не активированном поручительстве
