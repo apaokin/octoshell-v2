@@ -42,7 +42,7 @@ module CloudComputing
 
           after do
             requests.each(&:approve!)
-            instantiate_vm
+            create_and_update_vms
           end
 
         end
@@ -116,9 +116,10 @@ module CloudComputing
       end
     end
 
-    def instantiate_vm
+    def create_and_update_vms
       # OpennebulaTask.instantiate_access(id)
-      TaskWorker.perform_async(:instantiate_access, id)
+      CloudProvider.new()
+      # TaskWorker.perform_async(:instantiate_access, id)
     end
 
     def terminate_access

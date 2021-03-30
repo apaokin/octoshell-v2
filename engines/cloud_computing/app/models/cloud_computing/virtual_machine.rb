@@ -2,22 +2,6 @@ require 'csv'
 module CloudComputing
   class VirtualMachine < ApplicationRecord
 
-    STATES_AFTER_ACTION = {
-      'reboot-hard' => %w[ACTIVE RUNNING],
-      'reboot' => %w[ACTIVE RUNNING],
-      'poweroff' => %w[shutdown SHUTDOWN_POWEROFF],
-      'poweroff-hard' => %w[shutdown SHUTDOWN_POWEROFF],
-      'resume' => %w[PENDING LCM_INIT],
-      'reinstall' => %w[reinstall CLEANUP_RESUBMIT]
-    }.freeze
-
-    ACTIONS = {
-      %w[ACTIVE RUNNING] => %w[reboot reboot-hard poweroff poweroff-hard reinstall],
-      %w[POWEROFF LCM_INIT] => %w[resume],
-      %w[UNDEPLOYED LCM_INIT] => %w[resume],
-    }.freeze
-
-
     belongs_to :item, inverse_of: :virtual_machine
     has_many :api_logs, inverse_of: :virtual_machine
 
@@ -136,14 +120,14 @@ module CloudComputing
       api_logs.create!(log: results, action: action, item: item)
     end
 
-    def resource_or_resource_item_by_identity(identity)
-      resource_item = item.resource_items.where_identity(identity).first
-      if resource_item && resource_item.request_resource_item
-        resource_item = resource_item.request_resource_item
-      end
-      resource_item ||
-        item.template.resources.where(editable: false).where_identity(identity)
-            .first
-    end
+    # def resource_or_resource_item_by_identity(identity)
+    #   resource_item = item.resource_items.where_identity(identity).first
+    #   if resource_item && resource_item.request_resource_item
+    #     resource_item = resource_item.request_resource_item
+    #   end
+    #   resource_item ||
+    #     item.template.resources.where(editable: false).where_identity(identity)
+    #         .first
+    # end
   end
 end

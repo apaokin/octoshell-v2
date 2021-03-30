@@ -3,6 +3,7 @@ module CloudComputing
     include CloudComputing::MassAssignment
     translates :name, :description
     belongs_to :template_kind, inverse_of: :templates
+    belongs_to :cloud, inverse_of: :templates
     has_many :resources, inverse_of: :template, dependent: :destroy
     has_many :editable_resources, -> { where(editable: true) },
              inverse_of: :template, dependent: :destroy, class_name: Resource.to_s
@@ -20,7 +21,7 @@ module CloudComputing
 
     validates_translated :name, presence: true
 
-    validates :template_kind, presence: true
+    validates :template_kind, :cloud, presence: true
     validates :identity, uniqueness: { scope: :template_kind_id }
 
     validates :description_ru, :description_en, presence: true, if: :new_requests

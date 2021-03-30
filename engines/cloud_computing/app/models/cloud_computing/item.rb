@@ -46,6 +46,11 @@ module CloudComputing
     #   puts item.holder.inspect.red
     # end
 
+    def self.without_virtual_machine
+      joins(:virtual_machine).where(cloud_computing_virtual_machines: { id: nil } )
+    end
+
+
     def to_item_kinds
       TemplateKind.joins(:to_conditions)
           .where(cloud_computing_conditions: { from_id: item.item_kind.self_and_ancestors,
@@ -87,6 +92,17 @@ module CloudComputing
     def name
       item.name
     end
+
+    def resource_or_resource_item_by_identity(identity)
+      resource_item = resource_items.where_identity(identity).first
+      if resource_item && resource_item.request_resource_item
+        resource_item = resource_item.request_resource_item
+      end
+      resource_item || template.resources.where(editable: false)
+                               .where_identity(identity).first
+    end
+
+
 
   end
 

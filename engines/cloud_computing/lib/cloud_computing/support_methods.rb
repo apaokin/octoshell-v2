@@ -18,7 +18,7 @@ module CloudComputing
     end
 
 
-    def self.create_virtual_machine(nebula_id = 71)
+    def self.create_virtual_machine(nebula_id = nil)
       virtual_kind = CloudComputing::TemplateKind.create!(name_ru: 'Виртуальная машина',
                                                       name_en: 'Virtual machine',
                                                       cloud_class: VirtualMachine)
@@ -39,10 +39,11 @@ module CloudComputing
       not_editable = virtual_kind.resource_kinds.create!(name: 'not_editable',
         measurement: 'm', content_type: 'positive_integer')
 
-
+      cloud = CloudComputing::Cloud.create!
       virtual_kind.templates.create!(name: 'First virtual machine',
                                  description_en: 'Description', new_requests: true,
-                                 identity: nebula_id, description_ru: 'Описание'
+                                 identity: nebula_id, description_ru: 'Описание',
+                                 cloud: cloud
                                  ) do |template|
         template.resources.new(resource_kind: memory, min: 1, max: 2,
                            value: 1.5, editable: true)
