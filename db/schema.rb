@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_12_20_233725) do
+ActiveRecord::Schema.define(version: 2021_03_28_163629) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -99,8 +99,30 @@ ActiveRecord::Schema.define(version: 2020_12_20_233725) do
     t.string "action"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "result"
     t.index ["item_id"], name: "index_cloud_computing_api_logs_on_item_id"
     t.index ["virtual_machine_id"], name: "index_cloud_computing_api_logs_on_virtual_machine_id"
+  end
+
+  create_table "cloud_computing_clouds", force: :cascade do |t|
+    t.string "kind"
+    t.string "name_en"
+    t.string "name_ru"
+    t.text "description_en"
+    t.text "description_ru"
+    t.text "remote_host"
+    t.text "remote_private_key"
+    t.integer "remote_port"
+    t.string "remote_path"
+    t.string "remote_user"
+    t.text "remote_password"
+    t.text "remote_command"
+    t.string "remote_proxy_host"
+    t.integer "remote_proxy_port"
+    t.boolean "remote_use_ssl"
+    t.text "octo_password"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "cloud_computing_conditions", force: :cascade do |t|
@@ -229,6 +251,8 @@ ActiveRecord::Schema.define(version: 2020_12_20_233725) do
     t.boolean "new_requests", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "cloud_id"
+    t.index ["cloud_id"], name: "index_cloud_computing_templates_on_cloud_id"
     t.index ["template_kind_id"], name: "index_cloud_computing_templates_on_template_kind_id"
   end
 
@@ -989,7 +1013,7 @@ ActiveRecord::Schema.define(version: 2020_12_20_233725) do
     t.integer "ticket_id"
     t.text "description_en"
     t.string "name_en"
-    t.boolean "ticket_created"
+    t.boolean "ticket_created", default: false
     t.index ["package_id"], name: "index_pack_versions_on_package_id"
   end
 
@@ -1012,15 +1036,6 @@ ActiveRecord::Schema.define(version: 2020_12_20_233725) do
     t.text "about"
     t.boolean "receive_info_mails", default: true
     t.boolean "receive_special_mails", default: true
-  end
-
-  create_table "sessions_managers", force: :cascade do |t|
-    t.bigint "user_id"
-    t.bigint "session_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["session_id"], name: "index_sessions_managers_on_session_id"
-    t.index ["user_id"], name: "index_sessions_managers_on_user_id"
   end
 
   create_table "sessions_projects_in_sessions", id: :serial, force: :cascade do |t|
@@ -1216,7 +1231,6 @@ ActiveRecord::Schema.define(version: 2020_12_20_233725) do
     t.string "hint_en"
     t.string "model_collection"
     t.integer "kind", default: 0
-    t.boolean "search", default: false
   end
 
   create_table "support_replies", id: :serial, force: :cascade do |t|
