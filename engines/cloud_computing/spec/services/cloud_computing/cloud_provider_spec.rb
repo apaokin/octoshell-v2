@@ -2,8 +2,14 @@ module CloudComputing
   require 'main_spec_helper'
   describe CloudProvider do
     before(:each) do
-      @template1 =  FactoryBot.create(:cloud_vm_template)
-      @template2 =  FactoryBot.create(:cloud_vm_template, template_kind: @template1.template_kind)
+      @cloud = FactoryBot.create(:cloud_cloud, kind: 'Opennebula')
+      Opennebula::Provider.instance_variable_set(:@client_class, FakeOpennebulaClient)
+      Opennebula::Callback.instance_variable_set(:@sleep_seconds, 1)
+
+      @template1 =  FactoryBot.create(:cloud_vm_template, cloud: @cloud)
+      @template2 =  FactoryBot.create(:cloud_vm_template,
+                                      template_kind: @template1.template_kind,
+                                      cloud: @cloud)
 
       @access = FactoryBot.create(:cloud_access)
       @item1 = FactoryBot.create(:cloud_item, template: @template1, holder: @access)
@@ -41,20 +47,12 @@ module CloudComputing
 
     end
 
-    if ENV['OPENNEBULA_URI']
-      context 'opennebula api methods' do
-        it 'shows templates' do
-          
-        end
-      end
-
-    end
-
     describe '::create_and_update_vms' do
-      it 'displays hash' do
+      it 'creates new vms successfully' do
         CloudProvider.create_and_update_vms(@access)
       end
     end
+
 
     describe '::item_hash' do
       it 'displays hash' do

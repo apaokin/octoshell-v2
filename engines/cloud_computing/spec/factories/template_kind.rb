@@ -6,7 +6,7 @@ FactoryBot.define do
     factory :cloud_vm_template_kind do
       cloud_class { CloudComputing::VirtualMachine }
       resource_kinds do
-        %i[memory cpu disk imaginary].map do |trait|
+        %i[memory cpu disk internet imaginary].map do |trait|
           create(:cloud_resource_kind, trait)
         end
       end

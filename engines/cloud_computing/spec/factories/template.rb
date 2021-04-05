@@ -16,7 +16,7 @@ FactoryBot.define do
 
       # template_kind { create(:cloud_vm_template_kind) }
       resources do
-        %i[memory cpu disk imaginary].each_with_index.map do |trait, index|
+        %i[memory cpu disk internet imaginary].each_with_index.map do |trait, index|
           create(:cloud_resource, trait, resource_kind: template_kind.resource_kinds.to_a[index])
         end
       end

@@ -28,6 +28,11 @@ FactoryBot.define do
       editable { false }
     end
 
+    trait :internet do
+      value { 1 }
+      editable { true }
+    end
+
     trait :imaginary do
       # resource_kind { CloudComputing::ResourceKind.find_by_name('Imaginary') || create(:cloud_resource_kind, :imaginary) }
       value { 1000 }

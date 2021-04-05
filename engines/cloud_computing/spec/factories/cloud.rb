@@ -7,9 +7,10 @@ FactoryBot.define do
     remote_port { '2040' }
     remote_path { nil }
 
-    # after(:create) do |cloud|
-    #   cloud
-    # end
+    after(:create) do |cloud|
+      cloud.cloud_attributes.create!(key: 'local_network_id', value: 1)
+      cloud.cloud_attributes.create!(key: 'internet_network_id', value: 109)
+    end
 
   end
 end

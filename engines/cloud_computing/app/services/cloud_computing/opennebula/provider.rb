@@ -5,7 +5,7 @@ module CloudComputing
 
 
       def self.client_class
-        Client
+        @client_class ||= Client
       end
 
       def self.connection(connection_params)
@@ -20,8 +20,9 @@ module CloudComputing
         public_send(operation, params)
       end
 
-      def create_and_update_vms(params)
-        Operations::CreateAndUpdate.new(client).execute(params)
+      def create_and_update_vms(params, env_params = {})
+        r = Operations::CreateAndUpdate.new(client, env_params).execute(params)
+        CloudProvider.receive_on_create_and_update_vms(r)
       end
 
 

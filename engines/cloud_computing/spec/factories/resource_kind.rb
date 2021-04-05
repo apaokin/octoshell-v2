@@ -29,6 +29,12 @@ FactoryBot.define do
       content_type { 'positive_integer' }
     end
 
+    trait :internet do
+      name { 'Hard drive size' }
+      identity { 'internet' }
+      content_type { 'boolean' }
+    end
+
     trait :imaginary do
       name { 'Imaginary' }
       content_type { 'positive_integer' }

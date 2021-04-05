@@ -71,6 +71,10 @@ module CloudComputing
       end
 
       def equal_to_states?(required_state, required_lcm_state = 'LCM_INIT')
+        # puts state.inspect
+        # puts required_state.inspect
+        # puts lcm_state.inspect
+        # puts required_lcm_state.inspect
         state == required_state && lcm_state == required_lcm_state
       end
 
