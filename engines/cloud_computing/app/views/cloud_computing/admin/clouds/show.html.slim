@@ -1,0 +1,24 @@
+- content_for :title do
+    - t(".title", cloud: @cloud.name)
+
+div class="panel panel-default"
+  div class="panel-heading"
+    - if can?(:manage, :cloud)
+      = link_to t('actions.edit'), [:edit, :admin, @cloud], class: "btn btn-default"
+.row
+  .col-md-6
+    blockquote
+      - cloud_show_attrs(@cloud).each do |key, value|
+          - Array(key).each do |key|
+              - new_value = value || @cloud.public_send(key)
+              - if new_value.present?
+                h4
+                  b = CloudComputing::Cloud.human_attribute_name key
+                p = new_value
+  .col-md-6
+    blockquote
+      h3 = CloudComputing::Cloud.human_attribute_name(:cloud_attributes)
+      - @cloud.cloud_attributes.each do |attr|
+        h4
+          b = attr.key
+        p = attr.value

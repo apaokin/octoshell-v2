@@ -1,5 +1,8 @@
 -content_for :title
-  - t(".title")
+  - t(".title", id: @item.id)
+
+= link_to t('.return_to_access'), admin_access_path(@item.holder),
+  class: 'btn btn-warning', style: "margin: 2% 0;"
 
 = bootstrap_form_for @search, url: @url, method: :get, layout: :horizontal do |f|
   .row

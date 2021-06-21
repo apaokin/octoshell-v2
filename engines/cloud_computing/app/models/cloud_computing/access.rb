@@ -52,6 +52,7 @@ module CloudComputing
         transitions from: :approved, to: :prepared_to_finish
         after do
           finish_access
+          Notifier.prepared_to_finish(self)
         end
       end
 
@@ -59,6 +60,7 @@ module CloudComputing
         transitions from: :approved, to: :prepared_to_deny
         after do
           finish_access
+          Notifier.prepared_to_deny(self)
         end
       end
 
@@ -117,19 +119,19 @@ module CloudComputing
     end
 
     def create_and_update_vms
-      # OpennebulaTask.instantiate_access(id)
-      CloudProvider.new()
-      # TaskWorker.perform_async(:instantiate_access, id)
+      CloudProvider.create_and_update_vms(self)
     end
 
     def terminate_access
-      # OpennebulaTask.terminate_access(id)
-      TaskWorker.perform_async(:terminate_access, id)
+      CloudProvider.terminate_access(self)
     end
 
     def finish_access
-      # OpennebulaTask.finish_access(id)
-      TaskWorker.perform_async(:finish_access, id)
+      CloudProvider.finish_access(self)
+    end
+
+    def reinstantiate
+      create_and_update_vms
     end
 
     def reinstantiate?
@@ -141,6 +143,14 @@ module CloudComputing
     def add_keys
       # OpennebulaTask.add_keys(id)
       TaskWorker.perform_async(:add_keys, id)
+    end
+
+    def record_new_synchronization_date_time
+      update!(started_sync_at: DateTime.now, finished_sync_at: nil)
+    end
+
+    def record_synchronization_finish_date_time
+      update!(finished_sync_at: DateTime.now)
     end
 
 

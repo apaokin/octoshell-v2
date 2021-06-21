@@ -31,6 +31,9 @@ module CloudComputing
                                 admin_requests_path, 'cloud_computing/admin/requests')
       menu.add_item_without_key(t("cloud_computing.engine_submenu.access_list"),
                                 admin_accesses_path, 'cloud_computing/admin/accesses')
+      menu.add_item_without_key(t("cloud_computing.engine_submenu.cloud_list"),
+                                admin_clouds_path, 'cloud_computing/admin/clouds')
+
       menu.items(self)
     end
 
@@ -62,16 +65,6 @@ module CloudComputing
         content_type: r_k.human_content_type,
         %i[measurement help description] => nil
       }
-    end
-
-
-    def vm_human_state(n_i)
-
-      if n_i.state == 'ACTIVE' && n_i.lcm_state == 'RUNNING'
-        human_state = t('cloud_computing.vm_human_state.running')
-        return "(#{human_state})"
-      end
-      ''
     end
 
     def admin_template_show_attrs(template)

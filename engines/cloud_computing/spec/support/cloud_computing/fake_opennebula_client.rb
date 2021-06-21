@@ -61,23 +61,23 @@ module CloudComputing
           if result['VM']['STATE'] == '3' && result['VM']['LCM_STATE'] == '3'
             result['VM']['STATE'] = '8'
             result['VM']['LCM_STATE'] = '0'
-            [true, vm_id]
+            [true, vm_id, 0]
           else
-            [false, 'wrong state', 2, vm_id]
+            [false, 'wrong state', 2]
           end
         elsif action == 'resume'
           if result['VM']['STATE'] == '8' && result['VM']['LCM_STATE'] == '0'
             result['VM']['STATE'] = '3'
             result['VM']['LCM_STATE'] = '3'
-            [true, vm_id]
+            [true, vm_id, 0]
           else
-            [false, 'wrong state', 2, vm_id]
+            [false, 'wrong state', 2]
           end
+        elsif action == 'reboot'
+          [true, vm_id, 0]
         end
-        [false, 'I can not do this action ', 3, vm_id]
-
       else
-        [false, 'no such vm', 1, vm_id]
+        [false, 'no such vm', 1]
       end
     end
 
@@ -94,7 +94,8 @@ module CloudComputing
           'NIC_ID' => '2',
           'IP' => "190.160.0.#{result['VM']['ID']}"
         }
-        [true, vm_id]
+        # puts result['VM']['TEMPLATE']['NIC'].inspect.green
+        [true, vm_id, 0]
       else
         [false, 'no such vm', 1, vm_id]
       end
@@ -111,7 +112,7 @@ module CloudComputing
         result['VM']['TEMPLATE']['NIC'].reject! do |n|
           n['NIC_ID'] == nic_id.to_s
         end
-        [true, vm_id]
+        [true, vm_id, 0]
       else
         [false, 'no such vm', 1, vm_id]
       end
@@ -129,6 +130,15 @@ module CloudComputing
 
     def terminate_vm(vm_id)
       xmlrpc_send('vm.action', 'terminate-hard', vm_id)
+      # results = vms.delete_if { |vm| vm['VM']['ID'].to_s == vm_id.to_s }
+      result = vms.detect { |vm| vm['VM']['ID'].to_s == vm_id.to_s }
+      if result
+        result['VM']['STATE'] = '6'
+        result['VM']['LCM_STATE'] = '0'
+        [true, vm_id, 0]
+      else
+        [false, vm_id, 0]
+      end
     end
 
     def update_context_for_template(template_id, context_hash)
@@ -137,15 +147,11 @@ module CloudComputing
       xmlrpc_send('template.update', template_id, context_string, 1)
     end
 
-    def instantiate_vm(template_id, vm_name, value_string)
+    def instantiate_vm(template_id, vm_name, context_hash)
       xmlrpc_send('template.instantiate', template_id, vm_name, false,
-                  value_string, true)
+                  to_value_string(context_hash, "\n"), true)
       id = vms.last ? vms.last['VM']['ID'] : 0
       id = id.to_i + 1
-      context_hash = value_string.partition('CONTEXT=[').last.split("\n")
-                                 .map do |splited|
-        splited.split('=')
-      end.to_h
       context_hash['SSH_PUBLIC_KEY'] = 'SSH KEY IS WRITTEN HERE'
       context_hash['DISK'] = {
         'SIZE' => '128'
@@ -156,10 +162,6 @@ module CloudComputing
         'IP' => "192.168.0.#{id}"
       }
 
-      context_hash.each do |key, value|
-        context_hash[key] = value.tr('"', '') if value.is_a? String
-      end
-
 
       new_vm = {
         'VM' => {
@@ -168,6 +170,7 @@ module CloudComputing
           'LCM_STATE' => '0',
           'ID' => id.to_s,
           'TEMPLATE' => context_hash,
+          'USER_TEMPLATE' => {'OCTOSHELL_ITEM_ID' => context_hash['OCTOSHELL_ITEM_ID']},
           'NAME' => vm_name
         }
       }
@@ -182,6 +185,15 @@ module CloudComputing
       [true, id]
     end
 
+    def vm_list
+      results = {
+        'VM_POOL' => {
+          'VM' => vms.map { |vm|  vm['VM'] }
+        }
+      }
+      [true, to_xml(results)]
+    end
+
     def vm_info(vm_id)
       xmlrpc_send('vm.info', vm_id, false)
       result = vms.detect { |vm| vm['VM']['ID'].to_s == vm_id.to_s }
@@ -189,6 +201,8 @@ module CloudComputing
         result['VM']['shown_times'] += 1
         shown_times = result['VM']['shown_times']
         puts "#{vm_id}: #{shown_times}"
+        puts "#{result['VM']['STATE']}: #{result['VM']['LCM_STATE']}"
+
         if shown_times == 3
           result['VM']['STATE'] = '3'
           result['VM']['LCM_STATE'] = '3'
@@ -211,15 +225,28 @@ module CloudComputing
       end
     end
 
-    def vm_resize(vm_id, str)
-      xmlrpc_send('vm.resize', vm_id, str, false)
+    def vm_resize(vm_id, hash)
+      xmlrpc_send('vm.resize', vm_id, to_value_string(hash, "\n"), false)
       result = vms.detect { |vm| vm['VM']['ID'].to_s == vm_id.to_s }
       if result
-        # result['VM']['TEMPLATE']['DISK']['SIZE'] = size
-        [true, vm_id]
+        result['VM']['TEMPLATE'].merge!(hash)
+        [true, vm_id, 0]
       else
         [false, 'no such vm', 1, vm_id]
       end
     end
+
+    def to_value_string(hash, delim)
+      hash.map do |key, value|
+        if value.is_a? Hash
+          "#{key}=[#{to_value_string(value, ',')}]"
+        else
+          "#{key}=\"#{value}\""
+        end
+      end.join(delim)
+    end
+
+
+
   end
 end

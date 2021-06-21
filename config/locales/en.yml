@@ -8,6 +8,15 @@ en:
           per-user: 'TRME TRME '
           site-wide: 'TRME TRME '
   "!": "!"
+  mailer:
+    footer:
+      maintained_by: Parallel information technologies laboratory, RCC MSU.
+      octo_regards: Yours faithfully, Octoshell.
+    header:
+      hello_known_name: Hello, %{name}!
+      hello_unknown: Hello!
+
+
   abilities:
     accesses:
       manage: Full access to cluster keys

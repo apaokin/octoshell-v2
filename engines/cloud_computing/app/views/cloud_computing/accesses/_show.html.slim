@@ -37,7 +37,7 @@ css:
   .container
     - @access.new_left_items.order(:created_at).each do |item|
       .col-md-6
-        h4 = link_to("#{t('.template')} #{item.template.name}##{item.id}", item.template)
+        h4 = link_to("#{item.template.name}##{item.id}", item.template)
         - item.all_resources.map  do |resource|
           - if resource.is_a?(CloudComputing::ResourceItem) && resource.request_resource_item
             div
@@ -59,8 +59,7 @@ css:
         - if n_i
               .col-md-9
                 table.table.table-hover
-                  -%i[id name identity inner_address internet_address].each do |a|
-                    - if @admin || a != :name
+                  -%i[id identity inner_address internet_address].each do |a|
                       tr
                         td
                           = CloudComputing::VirtualMachine.human_attribute_name(a)
@@ -71,34 +70,28 @@ css:
                     td
                       = CloudComputing::VirtualMachine.human_attribute_name(:human_state)
                     td
-                      = "#{n_i.human_state} #{vm_human_state(n_i)}"
+                      = n_i.full_state
                   tr
                     td
                       = CloudComputing::VirtualMachine.human_attribute_name(:last_info)
                     td
                       = n_i.last_info
 
-                  tr
-                    - if @admin
-                      td = link_to t('.vm_info'), vm_info_admin_virtual_machine_path(n_i),
-                        method: :patch, class: 'btn btn-primary'
-                    - else
-                      td = link_to t('.vm_info'), vm_info_virtual_machine_path(n_i),
-                        method: :patch, class: 'btn btn-primary'
-
               .col-md-3
                 ul
-                  - if n_i.human_possible_actions.any?
-                    - n_i.human_possible_actions.each do |a|
+                  - if n_i.virtual_machine_actions.any?
+                    - n_i.virtual_machine_actions.each do |a|
                       li class="text-left"
                         - if @admin
-                          = link_to a.second, change_state_admin_virtual_machine_path(n_i, params: { vm_action: a.first }),
+                          = link_to a.human_action, change_state_admin_virtual_machine_path(n_i, params: { vm_action: a.action }),
                             class: 'dropdown-item',
                             method: :patch
                         - else
-                          = link_to a.second, change_state_virtual_machine_path(n_i, params: { vm_action: a.first }),
+                          = link_to a.human_action, change_state_virtual_machine_path(n_i, params: { vm_action: a.action }),
                             class: 'dropdown-item',
-                            method: :patch, data: { confirm: CloudComputing::VirtualMachine.hint_for_action(a.first) }
+                            method: :patch, data: { confirm: a.human_alert }
                   - else
                     = t('.no_actions')
-                  span.glyphicon.glyphicon-question-sign  style="margin-top: 10px;" title= t('.hint')
+                  - unless @admin
+
+                    span.glyphicon.glyphicon-question-sign  style="margin-top: 10px;" title=(n_i.transition_hint || t('.hint'))

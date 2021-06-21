@@ -102,29 +102,34 @@ ru:
         name: Название
         parent: Отцовский вид
         parent_id: Родительский тип
-      cloud_computing/virtual_machine:
+      cloud_computing/virtual_machine_action:
         actions:
           poweroff: Выключить
           poweroff-hard: Жёстко выключить
-          poweroff-hard-hint: >-
+          poweroff-hard-alert: >-
             Жёсткое выключение небезопасно, может повлечь потерю данных и должно использоваться
             только в исключительных случаях, например, при недостаточной поддержке
             сигналов ACPI в ОС. Попробуйте нежёсткий вариант. Вы хотите продолжить?
           reboot: Перезагрузить
           reboot-hard: Жёстко перезагрузить
-          reboot-hard-hint: >-
+          reboot-hard-alert: >-
             Жёсткая перезагрузка небезопасна, может повлечь потерю данных и должна
             использоваться только в исключительных случаях, например, при недостаточной
             поддержке сигналов ACPI в ОС. Попробуйте нежёсткий вариант. Вы хотите
             продолжить?
           reinstall: Переустановить ОС
-          reinstall-hint: Переустановка ОС сотрёт все данные на данной виртуальной
+          reinstall-alert: Переустановка ОС сотрёт все данные на данной виртуальной
             машине. Вы уверены?
           resume: Включить
           undeploy-hard: Undeploy
+      cloud_computing/virtual_machine:
+        states:
+          running: Работает
+          poweroff: Выключена
+          error: В ошибочном состоянии
         address: Адрес
         human_state: Состояние
-        identity: Opennebula id
+        identity: Id в облаке
         inner_address: Адрес во внутренней сети
         internet_address: Интернет адрес
         last_info: Состояние обновлено
@@ -148,6 +153,26 @@ ru:
     models:
       cloud_computing/virtual_machine: Виртуальная машина
   cloud_computing:
+    mailer:
+      prepared_to_deny:
+        subject: Отказано в доступе к облаку
+        msg: Вашему проекту "%{project_link}" отказано в доступе "%{access_link}" к облачным ресурсам СКЦ МГУ.
+      prepared_to_finish:
+        subject: Доступ к облаку окончен
+        msg: Доступ "%{access_link}" для Вашего проекта "%{project_link}" к облачным ресурсам СКЦ МГУ окончен.
+      request_refused:
+        subject: Заявка отклонена
+        msg: Ваша заявка "%{request_link}" для проекта "%{project_link}" на облачные ресурсы отклонена.
+      vm_created:
+        subject: Виртуальные машины готовы!
+        msg: >
+          Для Вашего проекта "%{project_link}" были созданы (или изменены) виртуальные машины.
+          Информация доступна на странице Вашего доступа: %{access_link}
+      vm_error:
+        subject: Ошибка при взаимодействии с облаком
+        msg: >
+          При выполнении действий в облаке у виртуальной машины %{item_log_link} произошли ошибки.
+
     accesses:
       add_keys:
         updated: Новые ключи успешно добавлены
@@ -155,6 +180,8 @@ ru:
         title: Доступы
       show:
         add_keys: Обновить ключи участников проекта
+        update_vm_state: Обновить состояние
+        reinstantiate: Синхронизировать
         add_to_request: Запросить изменение ресурсов
         help: |-
           Вы можете заходить на каждую виртуальную машину под логином root.
@@ -330,7 +357,7 @@ ru:
       index:
         created_after: Создано после
         created_before: Создано до
-        title: Логи виртуальной машины
+        title: Логи виртуальной машины c ID=%{id}
       table:
         no_api_logs_found: Не найдено логов
     engine_submenu:

@@ -6,6 +6,7 @@ module CloudComputing::Admin
     def api_logs
       @url = api_logs_admin_item_path(params[:id])
       @search = CloudComputing::ApiLog.search(params[:q])
+      @item = CloudComputing::Item.find(params[:id])
       @api_logs = @search.result(distinct: true)
                          .where(item_id: params[:id])
                          .order(created_at: :desc)

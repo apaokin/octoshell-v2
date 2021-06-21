@@ -1,6 +1,7 @@
 CloudComputing::Engine.routes.draw do
   namespace :admin do
     root 'templates#index'
+    resources :clouds
     resources :resource_kinds
     resources :templates
     resources :template_kinds do
@@ -34,6 +35,7 @@ CloudComputing::Engine.routes.draw do
         patch :finish
         patch :reinstantiate
         patch :prepare_to_deny
+        put :update_vm_state
       end
 
       collection do
@@ -81,8 +83,9 @@ CloudComputing::Engine.routes.draw do
 
   resources :accesses do
     member do
-      patch :add_keys
+      put :update_vm_state
       patch :prepare_to_finish
+      patch :reinstantiate
     end
   end
 

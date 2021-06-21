@@ -1,7 +1,7 @@
 module CloudComputing
   module Opennebula
     class Callback
-      attr_reader :vm_data
+      attr_reader :vm_data, :state
 
       def self.sleep_seconds
         @sleep_seconds ||= 10
@@ -11,11 +11,19 @@ module CloudComputing
         self.class.new(on: [state, lcm_state])
       end
 
-      def initialize(client, identity, required_state, required_lcm_state)
+      def initialize(client, identity, states)
         @client = client
         @identity = identity
-        @required_state = required_state
-        @required_lcm_state = required_lcm_state
+        states = [states] if states.is_a?(State)
+        @states = states.map do |state|
+          if state.is_a?(State)
+            state
+          elsif state.is_a?(Array)
+            State.detect do |cur_state|
+              cur_state.state == state[0] && cur_state.lcm_state == state[1]
+            end
+          end
+        end
       end
 
       def exit_condition(&block)
@@ -33,21 +41,16 @@ module CloudComputing
 
       def check_state
         @state = State.find_state(@vm_data['STATE'], @vm_data['LCM_STATE'])
-        # puts @state.inspect.red
-        # puts @state.equal_to_states?(@required_state, @required_lcm_state).inspect.red
-        if @state.equal_to_states?(@required_state, @required_lcm_state)
-          return :done
-        end
+        return :done if @states.include?(@state)
 
         if %w[CLONING_FAILURE DONE].include?(@state.state) || @state.fail_alias? ||
-           @state.short_alias == 'unkn'
+           @state.unkn_alias?
           return :error
         end
 
         @state.change_state_if_possible(client: @client,
-                                       identity: @identity,
-                                       required_state: @required_state,
-                                       required_lcm_state: @required_lcm_state)
+                                        identity: @identity,
+                                        states: @states)
         :wait
       end
 
@@ -68,6 +71,8 @@ module CloudComputing
 
           sleep(self.class.sleep_seconds)
         end
+        return(yield) if block_given?
+
         return ([args[0].to_s] + @client.send(*args)) if args.any?
 
         nil

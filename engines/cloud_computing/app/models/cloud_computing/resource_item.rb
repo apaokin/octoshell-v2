@@ -41,7 +41,6 @@ module CloudComputing
     def human_value
       if resource_kind.positive_integer?
         value.to_i
-
       elsif resource_kind.boolean?
         I18n.t(value == '1')
       else

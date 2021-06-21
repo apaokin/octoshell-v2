@@ -22,7 +22,7 @@ module CloudComputing
               [true, 'message', 'ok']
             end
           end
-          callback = Callback.new(client, 1, 'ACTIVE', 'RUNNING').exit_condition do |vm_data|
+          callback = Callback.new(client, 1, [%w[ACTIVE RUNNING]]).exit_condition do |vm_data|
             vm_data['TEMPLATE']['DISK']['SIZE'] == value
           end
           expect(callback.wait(:vm_disk_resize, 1, 0, value)).to eq(
@@ -60,7 +60,7 @@ module CloudComputing
               @lcm_state = '3'
             end
           end
-          callback = Callback.new(client, 1, 'ACTIVE', 'RUNNING').exit_condition do |vm_data|
+          callback = Callback.new(client, 1, [%w[ACTIVE RUNNING]]).exit_condition do |vm_data|
             vm_data['TEMPLATE']['DISK']['SIZE'] == value
           end
           expect(callback.wait(:vm_disk_resize, 1, 0, value)).to eq ['vm_disk_resize',
@@ -78,11 +78,11 @@ module CloudComputing
               [false, 'error_message', 'error', id]
             end
           end
-          callback = Callback.new(client, 1, 'ACTIVE', 'RUNNING').exit_condition do |vm_data|
+          callback = Callback.new(client, 1, [%w[ACTIVE RUNNING]]).exit_condition do |vm_data|
             raise_error
           end
           expect(callback.wait(:vm_disk_resize, 1, 0, 'value')).to eq(
-            ['vm_info', false, 'error_message', 'error', id])
+            ['vm_info', false, 'error_message', 'error', 1] )
         end
 
 
@@ -104,7 +104,7 @@ module CloudComputing
             end
 
           end
-          callback = Callback.new(client, 1, 'ACTIVE', 'RUNNING').exit_condition do |vm_data|
+          callback = Callback.new(client, 1, [['ACTIVE', 'RUNNING']]).exit_condition do |vm_data|
             vm_data['TEMPLATE']['DISK']['SIZE'] == '2005'
           end
 

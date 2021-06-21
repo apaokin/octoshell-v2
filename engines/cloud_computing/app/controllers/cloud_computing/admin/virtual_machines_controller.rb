@@ -8,19 +8,24 @@ module CloudComputing::Admin
     end
 
     def change_state
-      result, message = @virtual_machine.change_vm_state(params[:vm_action])
-      message = t('.wrong_action') if message == 'wrong action'
-      if result
-        redirect_to admin_access_path(@virtual_machine.item.holder),
-                    flash: { info:  t('.success') }
-      else
-        redirect_to admin_access_path(@virtual_machine.item.holder),
-                    flash: { error: message.inspect }
 
-      end
+      CloudComputing::CloudProvider.execute_action(@virtual_machine.item_id, params[:vm_action])
+      redirect_to admin_access_path(@virtual_machine.item.holder),  flash: { info: t('.info') }
+
+      # result, message = @virtual_machine.change_vm_state(params[:vm_action])
+      # message = t('.wrong_action') if message == 'wrong action'
+      # if result
+      #   redirect_to admin_access_path(@virtual_machine.item.holder),
+      #               flash: { info:  t('.success') }
+      # else
+      #   redirect_to admin_access_path(@virtual_machine.item.holder),
+      #               flash: { error: message.inspect }
+      #
+      # end
     end
 
     def vm_info
+
       result, data = @virtual_machine.vm_info
       if result
         redirect_to admin_access_path(@virtual_machine.item.holder),

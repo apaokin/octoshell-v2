@@ -20,7 +20,9 @@ css:
   - if @access.may_deny?
     = link_to t('.finish'), deny_admin_access_path, class: "btn btn-danger",
       method: :patch, data: { confirm: t('.finish_confirm') }
-  - if @access.approved? && @access.reinstantiate?
+  - if @access.approved?
+    = link_to t('.update_vm_state'), update_vm_state_admin_access_path, class: "btn btn-primary", method: :put
+  - if @access.approved?
     = link_to t('.reinstantiate'), reinstantiate_admin_access_path, class: "btn btn-primary", method: :patch
 
 

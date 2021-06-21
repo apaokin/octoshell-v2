@@ -1,0 +1,6 @@
+- content_for :title do
+    - t(".title")
+
+div class="well"
+  = link_to t(".new_cloud"), new_admin_cloud_path, class: "btn btn-default"
+= render "table", clouds: @clouds

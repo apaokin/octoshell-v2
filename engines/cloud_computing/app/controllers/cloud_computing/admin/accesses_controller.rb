@@ -4,7 +4,7 @@ module CloudComputing::Admin
   class AccessesController < CloudComputing::Admin::ApplicationController
 
     before_action only: %i[show finish approve deny
-      edit update reinstantiate prepare_to_deny] do
+      edit update reinstantiate prepare_to_deny update_vm_state] do
       @access = CloudComputing::Access.find(params[:id])
     end
 
@@ -22,13 +22,18 @@ module CloudComputing::Admin
     def show
     end
 
+    def update_vm_state
+      CloudComputing::CloudProvider.show(@access)
+      redirect_to [:admin, @access], flash: { info: t('.info') }
+    end
+
     def approve
       @access.approve!
       redirect_to [:admin, @access]
     end
 
     def reinstantiate
-      @access.instantiate_vm
+      @access.reinstantiate
       redirect_to [:admin, @access]
     end
 

@@ -52,35 +52,19 @@ module CloudComputing::Admin
     def load_templates
       load_virtual_machine_template_kind
 
-      results = @template_kind.load_templates
-      unless results[0]
-        redirect_to [:admin, @template_kind], flash: { error: results.slice(1..-1) }
-      end
+      CloudComputing::CloudProvider.template_list
+      # unless results[0]
+      #   redirect_to [:admin, @template_kind], flash: { error: results.slice(1..-1) }
+      # end
+      #
+      # strings = t('.added_templates')
+      # results.slice(1..-1).each do |template|
+      #   strings += '<br>'
+      #   string = "id: #{template.id}, name: #{template.name}, nebula_id: #{template.identity}"
+      #   strings += helpers.link_to(string, [:admin, template])
+      # end
 
-      strings = t('.added_templates')
-      results.slice(1..-1).each do |template|
-        strings += '<br>'
-        string = "id: #{template.id}, name: #{template.name}, nebula_id: #{template.identity}"
-        strings += helpers.link_to(string, [:admin, template])
-      end
-
-      redirect_to [:admin, @template_kind], flash: { info: strings.html_safe }
-    end
-
-    def add_necessary_attributes
-      load_virtual_machine_template_kind
-      message = @template_kind.my_and_descendant_templates.where
-                          .not(identity: nil).map do |template|
-        results = CloudComputing::OpennebulaTask.add_necessary_attributes(template.identity)
-        link = helpers.link_to("\##{template.id}", [:admin, template])
-        success = results[0]
-        if success
-          [t('.updated_successfully'), link]
-        else
-          [t('.errors_found'), link, results.slice(1..-1)]
-        end.join(' | ')
-      end.join('<br>')
-      redirect_to [:admin, @template_kind], flash: { info: message.html_safe }
+      redirect_to [:admin, @template_kind], flash: { info: 'in progress' }
     end
 
     def edit_all

@@ -1,7 +1,7 @@
 module CloudComputing
   module Opennebula
     class State
-
+      extend Enumerable
 
       STATES_AFTER_ACTION = {
         'reboot-hard' => %w[ACTIVE RUNNING],
@@ -49,6 +49,51 @@ module CloudComputing
         end
       end
 
+      def self.each(&block)
+        vm_states.each(&block)
+      end
+
+      def self.running
+        detect do |state|
+          state.state == 'ACTIVE' && state.lcm_state == 'RUNNING'
+        end
+      end
+
+      def self.poweroff
+        detect do |state|
+          state.state == 'POWEROFF'
+        end
+      end
+
+      def self.done
+        detect do |state|
+          state.state == 'DONE'
+        end
+      end
+
+      def self.alive_states
+        select do |state|
+          %w[STOPPED SUSPENDED POWEROFF].include?(state.state)
+        end + [running]
+      end
+
+      def self.show_states
+        alive_states + [done]
+      end
+
+      def self.for_termination
+        show_states
+      end
+
+
+      # def self.poweroff
+      #   State.detect do |state|
+      #     state.state == 'POWEROFF'
+      #   end
+      # end
+
+
+
       def initialize(array)
         ATTRS.each_with_index do |a, index|
           val = array[index]
@@ -65,22 +110,29 @@ module CloudComputing
         ACTIONS[[state, lcm_state]] || []
       end
 
-      def action_to_reach(required_state, required_lcm_state)
-        states = TRANSIT_TO_STATE[[required_state, required_lcm_state]] || {}
-        states[[state, lcm_state]]
+      def action_to_reach(states)
+        states.each do |c_state|
+          state_action = TRANSIT_TO_STATE[[c_state.state, c_state.lcm_state]]
+          next unless state_action
+
+          action = state_action[[state, lcm_state]]
+          return action if action
+        end
+        nil
       end
 
       def equal_to_states?(required_state, required_lcm_state = 'LCM_INIT')
-        # puts state.inspect
-        # puts required_state.inspect
-        # puts lcm_state.inspect
-        # puts required_lcm_state.inspect
         state == required_state && lcm_state == required_lcm_state
       end
 
-      def change_state_if_possible(client:, identity:,
-                                   required_state:, required_lcm_state:)
-        action = action_to_reach(required_state, required_lcm_state)
+      def ==(other)
+        state == other.state && lcm_state == other.lcm_state
+      end
+
+      def change_state_if_possible(client:, identity:, states:)
+        action = action_to_reach(states)
+        return unless action
+
         change_state(client, action, identity)
       end
 
@@ -92,29 +144,35 @@ module CloudComputing
         else
           result, *arr = client.vm_action(identity, action)
         end
-        # if result
-        #   states = VirtualMachine::STATES_AFTER_ACTION[action]
-        #   self.state = states[0]
-        #   self.lcm_state = states[1]
-        #   save
-        #
-        #   states = Array(previous_changes['state'])
-        #   lcm_states = Array(previous_changes['lcm_state'])
-        #
-        #   api_logs.create!(action: "success: #{action}",
-        #                    log: "#{states[0]}  #{lcm_states[0]} => #{states[1]} #{lcm_states[1]}")
-        #
-        # else
-        #   api_logs.create!(action: "failure: #{action}",
-        #                    log: "#{state} #{lcm_state} | #{arr.inspect}")
-        #
-        # end
         [result, arr]
       end
 
       def fail_alias?
         short_alias == 'fail'
       end
+
+      def unkn_alias?
+        short_alias == 'unkn'
+      end
+
+      def error_alias?
+        fail_alias? || unkn_alias?
+      end
+
+      def human_state
+        if self == State.running
+          'running'
+        elsif self == State.poweroff
+          'poweroff'
+        elsif unkn_alias? || fail_alias?
+          'error'
+        end
+      end
+
+      def short
+        "#{state} || #{lcm_state}"
+      end
+
 
 
 

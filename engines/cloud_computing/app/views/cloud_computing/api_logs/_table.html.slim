@@ -2,15 +2,23 @@
   div class="panel-body"
     table class="table table-hover"
       tr
+        th = CloudComputing::ApiLog.human_attribute_name(:success)
+        th = CloudComputing::ApiLog.human_attribute_name(:resource)
         th = CloudComputing::ApiLog.human_attribute_name(:action)
+        th = CloudComputing::ApiLog.human_attribute_name(:code)
         th = CloudComputing::ApiLog.human_attribute_name(:log)
         th = CloudComputing::ApiLog.human_attribute_name(:created_at)
 
       - api_logs.each do |api_log|
         tr
-          td class="col-md-3" = api_log.action
-          td class="col-md-6" = api_log.log
-          td class="col-md-3" = api_log.created_at
+          td = api_log.success
+          td = api_log.resource
+          td = api_log.action
+          td = api_log.code
+          td = api_log.log
+          td = api_log.created_at
+
+
 
 - else
   div class="panel-body"

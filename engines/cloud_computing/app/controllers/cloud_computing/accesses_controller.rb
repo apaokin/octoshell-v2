@@ -21,16 +21,28 @@ module CloudComputing
                          .per(params[:per])
     end
 
+    def update_vm_state
+      @access = project_accesses.find(params[:id])
+      CloudComputing::CloudProvider.show(@access)
+      redirect_to [@access]
+    end
+
+
 
     def show
       @access = project_accesses.find(params[:id])
     end
 
-    def add_keys
+    def reinstantiate
       @access = project_accesses.find(params[:id])
-      @access.add_keys
-      redirect_to @access, flash: { info: t('.updated') }
+      @access.reinstantiate
+      redirect_to [@access]
     end
+
+    # def add_keys
+    #   @access.add_keys
+    #   redirect_to @access, flash: { info: t('.updated') }
+    # end
 
     private
 

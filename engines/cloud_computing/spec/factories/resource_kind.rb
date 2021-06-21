@@ -30,7 +30,7 @@ FactoryBot.define do
     end
 
     trait :internet do
-      name { 'Hard drive size' }
+      name { 'Internet' }
       identity { 'internet' }
       content_type { 'boolean' }
     end

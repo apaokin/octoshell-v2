@@ -4,34 +4,25 @@ module CloudComputing
   class VirtualMachinesController < ApplicationController
 
     before_action do
-      @virtual_machine = CloudComputing::VirtualMachine.joins(:position)
-        .where(cloud_computing_positions: { holder_id: CloudComputing::Access.accessible_by(current_ability, :read) } )
+      @virtual_machine = CloudComputing::VirtualMachine.joins(:item)
+        .where(cloud_computing_items: { holder_id: CloudComputing::Access.accessible_by(current_ability, :read) } )
         .find(params[:id])
     end
 
     def change_state
-      result, message = @virtual_machine.change_vm_state(params[:vm_action])
-      message = t('.wrong_action') if message == 'wrong action'
-      if result
-        redirect_to access_path(@virtual_machine.position.holder),
-                    flash: { info:  t('.success') }
-      else
-        redirect_to access_path(@virtual_machine.position.holder),
-                    flash: { error: message.inspect }
+      CloudComputing::CloudProvider.execute_action(@virtual_machine.item_id, params[:vm_action])
+      redirect_to access_path(@virtual_machine.item.holder), flash: { info: t('.info') }
 
-      end
-    end
-
-    def vm_info
-      result, data = @virtual_machine.vm_info
-      if result
-        redirect_to access_path(@virtual_machine.position.holder),
-                    flash: { info: t('.success') }
-      else
-        redirect_to access_path(@virtual_machine.position.holder),
-                    flash: { error: data.inspect }
-
-      end
+      # result, message = @virtual_machine.change_vm_state(params[:vm_action])
+      # message = t('.wrong_action') if message == 'wrong action'
+      # if result
+      #   redirect_to access_path(@virtual_machine.position.holder),
+      #               flash: { info:  t('.success') }
+      # else
+      #   redirect_to access_path(@virtual_machine.position.holder),
+      #               flash: { error: message.inspect }
+      #
+      # end
     end
 
     def api_logs

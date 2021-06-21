@@ -4,8 +4,8 @@ module CloudComputing
     include Sidekiq::Worker
     sidekiq_options retry: 2, queue: :cloud_computing_task_worker
 
-    def perform(method, *args)
-      CloudComputing::OpennebulaTask.send(method, *args)
+    def perform(method, *args, **kwargs)
+      CloudComputing::CloudProvider.send(method, *args, **kwargs)
     end
   end
 end

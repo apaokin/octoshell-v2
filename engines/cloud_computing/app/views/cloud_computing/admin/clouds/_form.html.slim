@@ -1,0 +1,35 @@
+  = bootstrap_form_for [:admin, @cloud], layout: :vertical do |f|
+    .row
+      - CloudComputing::Cloud.locale_columns(:name).each do |column|
+        .col-md-6
+          = f.text_field column
+      - CloudComputing::Cloud.locale_columns(:description).each do |column|
+        .col-md-6
+          = f.text_area column, rows: 4
+    .row
+      .col-md-4
+        = f.select :kind, CloudComputing::Cloud.kinds
+        = f.text_field :remote_user
+        = f.text_area :remote_password, rows: 4
+        = f.text_area :octo_password, rows: 4
+      .col-md-4
+        = f.text_area :remote_host, rows: 4
+        = f.number_field :remote_port
+        = f.text_field :remote_path
+        = f.form_group :remote_use_ssl
+          = f.check_box :remote_use_ssl
+
+      .col-md-4
+        = f.text_area :remote_proxy_host, rows: 4
+        = f.number_field :remote_proxy_port
+        = f.text_area :remote_command, rows: 4
+        = f.text_area :remote_private_key, rows: 4
+
+    .row
+      h3 = CloudComputing::Cloud.human_attribute_name(:cloud_attributes)
+      = f.fields_for :cloud_attributes do |ff|
+        = ff.hidden_field :id
+        = ff.hidden_field :key
+        = ff.text_field :value, label: ff.object.key
+    = f.form_group do
+      = f.submit t("buttons.save")

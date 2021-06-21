@@ -5,6 +5,8 @@ FactoryBot.define do
 
     factory :cloud_vm_template_kind do
       cloud_class { CloudComputing::VirtualMachine }
+      sequence(:name) { |n| "Virtual machine kind #{n}" }
+
       resource_kinds do
         %i[memory cpu disk internet imaginary].map do |trait|
           create(:cloud_resource_kind, trait)

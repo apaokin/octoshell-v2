@@ -104,32 +104,25 @@ module CloudComputing
       end
     end
 
-    def load_templates
-
-      request_details = OpennebulaClient.template_list
-      return requests_details unless request_details[0]
-
-      results = []
-      data = Hash.from_xml(request_details[1])['VMTEMPLATE_POOL']['VMTEMPLATE']
+    def load_templates(data)
       data.each do |template|
-        next if template['TEMPLATE']['OCTOSHELL_BOUND_TO_TEMPLATE']
-        next if template['TEMPLATE']['VROUTER'] == 'yes'
-
-        my_and_descendant_templates.where(identity: template['ID']).first_or_create! do |record|
-          record.template_kind = self
+        templates.create! do |record|
+          record.identity = template['identity']
+          record.cloud_id = template['cloud_id']
           record.name = template['NAME']
 
-          record.resources.build(value: template['TEMPLATE']['CPU'],
-                                 resource_kind: ResourceKind.find_by_identity!('CPU'))
-          record.resources.build(value: template['TEMPLATE']['MEMORY'].to_i / 1024,
-                                 resource_kind: ResourceKind.find_by_identity!('MEMORY'))
+          cpu = ResourceKind.find_by_identity('CPU')
+          if cpu
+            record.resources.build(value: template['CPU'], resource_kind: cpu)
+          end
 
-          results << record
+          memory = ResourceKind.find_by_identity('MEMORY')
+          if memory
+            record.resources.build(value: template['MEMORY'],
+                                   resource_kind: memory)
+          end
         end
       end
-
-      [true, *results]
-
     end
 
     def my_and_descendant_templates

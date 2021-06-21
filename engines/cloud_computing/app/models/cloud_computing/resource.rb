@@ -85,7 +85,13 @@ module CloudComputing
     end
 
     def human_value
-      only_integer? ? value.to_i : value
+      if resource_kind.positive_integer?
+        value.to_i
+      elsif resource_kind.boolean?
+        I18n.t(value == '1')
+      else
+        value
+      end
     end
 
     def only_integer?
