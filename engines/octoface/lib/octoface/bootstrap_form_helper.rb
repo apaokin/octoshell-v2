@@ -1,7 +1,8 @@
 module Octoface
+  # This class can be as a superclass for classes defining bootstrap form helpers.
+  # See child classes BootstrapFormHelper in other engines for better understanding.     
   class BootstrapFormHelper
     attr_reader :name, :options, :html_options, :f, :prefix
-    # def initialize(view, f, prefix = '', options = {}, html_options = {})
     def initialize(view, f, *args)
       if args.first.is_a?(String)
         @prefix, @options, @html_options = *args

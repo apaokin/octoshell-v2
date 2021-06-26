@@ -30,6 +30,8 @@ module Octoface
       end
     end
 
+    # Gets constant for linked engine
+    # @param class_name [String] Class_name without engine name
     def get_klass(class_name)
       mod.const_get(class_name)
     end
@@ -41,7 +43,8 @@ module Octoface
       app_helper = eval("#{mod}::ApplicationHelper")
       ::ApplicationHelper.include app_helper
     end
-
+    # "Allow" the class to be referenced directly outside engine
+    # @param class_name [String] Class_name without engine name
     def add(name)
       @classes[name] = []
       # self.class.mod_methods[name] = obj
@@ -49,23 +52,57 @@ module Octoface
 
     end
 
-    def add_ability(*args, &block)
-      @abilities << args if args.any?
+    # Octoshell uses cancancan gem as an authorization tool. Permissions
+    # are assigned in the Ability class (app/models/ability.rb) using can method.
+    # There are 2 ways to handle permissions in Octoshell:
+    # * Store permissions and edit them in browser (recommended).
+    #   Use action, subject and groups arguments to create
+    #   these permissions automically if they haven't yet.
+    # * Use blocks to access Ability class directly (check out Support engine
+    #   for detailed example)
+    #
+    # @example DB way
+    #   add_ability(:manage, :projects, 'superadmins')
+    #   can?(:manage, :projects) => true # If user is in "superadmins" group
+    #
+    # @example Block way
+    #  can :manage, :projects if User.superadmins.include? user
+    # @example Block way (Core::Project.accessible_by and other cancancan features can be used)
+    #  can :manage, Core::Project if User.superadmins.include? user
+    # @param action [Symbol] first argument of can method
+    # @param subject [Symbol] second argument of can method
+    # @param *groups [Array<String>] Allow these groups to do action on subject by default
+    # @yield Block to be evaluated by Ability class
+    #   (if these permsissions have not been created yet)
+    def add_ability(action = nil, subject = nil, *groups, &block)
+      @abilities << ([action, subject] + groups) if action && subject
       @ability_blocks << block if block
     end
 
-    def add_controller_ability(*args)
-      @controller_abilities << args
+    # call authorize!(action, subject) in the controllers specifed by paths arguments before action
+    # @param action [Symbol] first argument of can method
+    # @param subject [Symbol] second argument of can method
+    # @param *paths [Array<String>] paths of controllers
+    def add_controller_ability(action, subject, *paths)
+      @controller_abilities << [action, subject] + paths
     end
 
+    # The method adds engine routes
+    # @yield Block to be evaluated inside config/routes.rb
     def add_routes(&block)
       @routes_block = block
     end
 
+
+    # Executes code block after all initializers are loaded. The method is
+    # used to add engine links
+    # @yield Block to be executed
     def after_init(&block)
       @init_block = block
     end
 
+    # Evaluate code block inside Interface class of the role if it is present
+    # in the system
     def set(role, &block)
       config = self.class.instances[role]
       return unless config
@@ -78,6 +115,9 @@ module Octoface
       def find_by_role(role)
         instances[role]
       end
+      # Checks if role and class pair exists
+      # @param role [Symbol]
+      # @param class_name [String]
 
       def role_class?(role, class_name)
         role = find_by_role(role)
@@ -144,6 +184,7 @@ module Octoface
       end
 
 
+      # executes @init_blocks
       def finalize!
         instances.values.each(&:finish_intialization)
         # create_abilities!

@@ -1,8 +1,7 @@
 module Octoface
+  # Module is designed to ease 
   module Usage
     def octo_use(name, role, const)
-      # puts role.inspect.red
-      # puts  Octoface::OctoConfig.find_by_role(role).inspect.red
       if (role_class = Octoface::OctoConfig.find_by_role(role))
 
         if role_class.classes[const] && !role_class.classes[const].include?(self)
