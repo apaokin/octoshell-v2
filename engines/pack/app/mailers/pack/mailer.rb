@@ -1,15 +1,7 @@
 module Pack
   class Mailer < ActionMailer::Base
     helper_method :receiver, :to
-    # before_action only: %w[requested allowed denied expired deleted].map { |s| "access_changed_#{s}"} do
-    #   @link_for_to = link_to @access.to, @access.to
-    # end
 
-    # state :requested, initial: true
-    # state :allowed
-    # state :denied
-    # state :expired
-    # state :deleted
     def version_state_changed(id, version_id)
       @access = Access.find id
       @version = Version.find(version_id)
@@ -35,28 +27,6 @@ module Pack
         mail to: receiver.email, subject: t('.subject', to: to(@access.to))
       end
     end
-
-
-    # def access_changed_allowed(id)
-    #   @access = Access.find id
-    #   mail to: receiver.email, subject: t('.subject', to: to(@access.to))
-    # end
-    #
-    # def access_changed_denied(id)
-    #   @access = Access.find id
-    #   mail to: receiver.email, subject: t('.subject', to: to(@access.to))
-    # end
-    #
-    # def access_changed_expired(id)
-    #   @access = Access.find id
-    #   mail to: receiver.email, subject: t('.subject', to: to(@access.to))
-    # end
-    #
-    # def access_changed_deleted(id)
-    #   @access = Access.find id
-    #   mail to: receiver.email, subject: t('.subject', to: to(@access.to))
-    # end
-
 
     private
 

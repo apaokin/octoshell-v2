@@ -43,5 +43,8 @@ Rails.application.config.to_prepare do
   end
 
   # Auto-load preview classes from:
-  RailsEmailPreview.preview_classes = RailsEmailPreview.find_preview_classes('app/mailer_previews')
+  RailsEmailPreview.preview_classes =
+    ['app/mailer_previews', *Dir['engines/*/app/mailer_previews']].map do |dir|
+      RailsEmailPreview.find_preview_classes(dir)
+    end.flatten
 end
