@@ -37,8 +37,8 @@ module Sessions
 
   class UserClassAbsenceError < StandardError; end
 
-  ::Octoface::Hook.add_hook(:sessions, "sessions/hooks/admin_users_show",
-                            :main_app, :admin_users_show)
+  ::Octoface::ViewHook.add_hook(:sessions, "sessions/hooks/admin_users_show",
+                                :main_app, :admin_users_show)
   class << self
     def user_class
       if @@user_class.is_a?(String)

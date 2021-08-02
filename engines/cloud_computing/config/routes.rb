@@ -31,6 +31,7 @@ CloudComputing::Engine.routes.draw do
     resources :accesses do
       member do
         patch :approve
+        post :merge
         patch :deny
         patch :finish
         patch :reinstantiate

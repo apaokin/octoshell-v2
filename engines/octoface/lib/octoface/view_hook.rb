@@ -1,5 +1,5 @@
 module Octoface
-  class Hook
+  class ViewHook
     attr_reader :name
     def initialize(role, name)
       @name = name
@@ -41,7 +41,7 @@ module Octoface
 
       def find_or_initialize_hook(role, name)
         instances[role] && instances[role][name] ||
-          Octoface::Hook.new(role, name)
+          new(role, name)
       end
 
     end

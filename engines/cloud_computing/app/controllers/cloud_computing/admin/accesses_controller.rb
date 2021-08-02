@@ -4,7 +4,7 @@ module CloudComputing::Admin
   class AccessesController < CloudComputing::Admin::ApplicationController
 
     before_action only: %i[show finish approve deny
-      edit update reinstantiate prepare_to_deny update_vm_state] do
+      edit update reinstantiate prepare_to_deny update_vm_state merge] do
       @access = CloudComputing::Access.find(params[:id])
     end
 
@@ -106,6 +106,21 @@ module CloudComputing::Admin
         render 'create_from_request'
       end
     end
+
+    def merge
+      unless @access.created?
+        redirect_to admin_access_path(@access), flash: { error: t('.created_error') }
+        return
+      end
+      @merge_access = @access.same_accesses.mergeable.find(params[:merge_id])
+      unless @merge_access
+        redirect_to admin_access_path(@access), flash: { error: t('.merge_error') }
+        return
+      end
+      @access.merge_with(@merge_access)
+      redirect_to admin_access_path(@merge_access), flash: { info: t('.success') }
+    end
+
 
 
     private

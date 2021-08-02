@@ -2,7 +2,7 @@ module CloudComputing
   class CloudProvider
 
     def self.vm_attributes
-      %w[DISK=>SIZE internet CPU MEMORY]
+      %w[DISK=>SIZE internet CPU MEMORY SET_HOSTNAME]
     end
 
     def self.kinds
@@ -44,7 +44,7 @@ module CloudComputing
     end
 
     def self.perform_async?
-      false
+      true
     end
 
     def self.send_to_cloud_async(cloud, operation, *args)
@@ -183,7 +183,6 @@ module CloudComputing
 
       CloudComputing::Access.find(access_id).record_synchronization_finish_date_time
 
-
     end
 
     def self.create_and_update_vms(access)
@@ -220,6 +219,9 @@ module CloudComputing
     end
 
     def self.add_messages(item, result)
+      error_detected = false
+      changed = false
+
       (vm_attributes + [nil]).each do |attribute|
         messages = if attribute.nil?
                      result['messages'] || []
@@ -227,6 +229,12 @@ module CloudComputing
                      (result[attribute] || {})['messages'] || []
                    end
         messages.each do |msg|
+          changed = true
+          if !msg[0] && !error_detected
+            error_detected = true
+            Notifier.vm_error(item.id)
+          end
+
           item.api_logs.create!(
             success: msg[0],
             action: msg[1],
@@ -236,6 +244,7 @@ module CloudComputing
           )
         end
       end
+      changed
     end
 
     def self.update_virtual_machine(item, result)
@@ -283,12 +292,15 @@ module CloudComputing
     end
 
     def self.receive_on_create_and_update_vms(results)
-
+      changed = false
       results.each do |result|
         next if !result['item_id'] || !result['access_id']
 
         item = CloudComputing::Item.find(result['item_id'])
-        add_messages(item, result)
+        if add_messages(item, result)
+          changed = true
+        end
+
         next unless result['vm_id']
 
         update_virtual_machine(item, result)
@@ -297,7 +309,10 @@ module CloudComputing
       access_id = (results.first || {})['access_id']
       return unless access_id
 
-      CloudComputing::Access.find(access_id).record_synchronization_finish_date_time
+      access = CloudComputing::Access.find(access_id)
+
+      access.record_synchronization_finish_date_time
+      access.vm_created if changed
 
     end
   end

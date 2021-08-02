@@ -48,7 +48,8 @@ module ApplicationHelper
     # end
   end
 
-  def register_hook(role, name, maps, *order)
-    Octoface::Hook.find_or_initialize_hook(role, name).render(self, maps, *order)
+  def register_hook_place(role, name, maps, *order)
+    Octoface::ViewHook.find_or_initialize_hook(role, name)
+                      .render(self, maps, *order)
   end
 end

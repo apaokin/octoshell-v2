@@ -33,6 +33,16 @@ script#number_field type='text/x-handlebars-template'
       span.help-block
          '{{help}}
 
+script#text_field type='text/x-handlebars-template'
+ div class="form-group {{#if error}} has-error {{/if}}"
+   label.control-label.required for="{{id}}"  {{label}}
+   input.form-control id="{{id}}" name="{{name}}" type="text" value="{{value}}"
+     span.help-block
+        '{{help}}
+
+
+
+
 
 script#boolean_field type='text/x-handlebars-template'
   .form-group

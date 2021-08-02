@@ -38,8 +38,10 @@ module CloudComputing
         xmlrpc_send('vm.detachnic', vm_id, nic_id.to_i)
       end
 
-      def vm_updateconf(vm_id, string)
-        xmlrpc_send('vm.updateconf', vm_id, string)
+      def vm_updateconf(vm_id, context_hash)
+        values = context_hash.map { |key, value| "#{key}=\"#{value}\"" }.join(',')
+        context_string = "CONTEXT=[#{values}]"
+        xmlrpc_send('vm.updateconf', vm_id, context_string)
       end
 
 

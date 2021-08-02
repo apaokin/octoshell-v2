@@ -4,11 +4,16 @@ module CloudComputing
     belongs_to :resource, -> { where(editable: true) }, inverse_of: :resource_items
     has_one :resource_kind, through: :resource
 
-    validates :item, :resource, :value, presence: true
+    validates :item, :resource, presence: true
     validates :value, numericality: { only_integer: true }, if: :only_integer?
     validates :value, inclusion: { in: ['0', '1'] }, if: proc { |r|
       r.resource_kind.boolean?
     }
+
+    validates :value, presence: true, unless: proc { |r| r.resource_kind.text? }
+
+    validates :value, numericality: { greater_than_or_equal_to: 0 },
+                      if: proc { |r|  r.resource.number? }
 
     scope :with_identity, (lambda do
       joins(resource: :resource_kind).where.not(cloud_computing_resource_kinds: {
@@ -25,7 +30,15 @@ module CloudComputing
     end
 
     validate do
-      next if resource_kind.boolean?
+      if value.to_i < -1
+        errors.add(:value, :invalid)
+        pp self
+        puts 'VALUE < 1'.red
+      end
+    end
+
+    validate do
+      next if resource_kind.boolean? || resource_kind.text?
 
       if (resource.min > value.to_f || value.to_f > resource.max) &&
          item.holder.is_a?(CloudComputing::Request)
@@ -33,6 +46,8 @@ module CloudComputing
                                    max: resource.processed_max)
       end
     end
+
+
 
     def only_integer?
       resource.resource_kind.positive_integer?

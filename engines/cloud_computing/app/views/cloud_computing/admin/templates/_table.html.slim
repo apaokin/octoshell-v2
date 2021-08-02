@@ -4,6 +4,7 @@
       tr
         th = CloudComputing::Template.human_attribute_name("name")
         th = CloudComputing::Template.human_attribute_name("description")
+        th = CloudComputing::Cloud.model_name.human
         th = CloudComputing::Template.human_attribute_name("new_requests")
 
         th
@@ -11,6 +12,8 @@
         tr
           td class="col-xs-3" = link_to template.name, admin_template_path(template)
           td class="col-xs-3" = template.description
+          td class="col-xs-3" = link_to template.cloud.name,
+            admin_cloud_path(template.cloud)
           td class="col-xs-1" = t template.new_requests
           /i class="fa fa-check"
           /i class="fa fa-times"

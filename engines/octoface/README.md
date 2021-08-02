@@ -120,12 +120,12 @@ engines/sessions/lib/sessions.rb как пример.
  и передаётся аргумент по ключу user(должны же знать другие модули для какого именно пользователя надо отображать данные):
 ```
   /app/views/admin/users/show.html.slim
-  = register_hook(:main_app,:admin_users_show, { user: @user })
+  = register_hook_place(:main_app,:admin_users_show, { user: @user })
 ```
 Модуль Core добавляет  хук-представление core/hooks/admin_users_show
 ```ruby
   engines/core/lib/core.rb
-  Octoface::Hook.add_hook(:core, "core/hooks/admin_users_show",
+  Octoface::ViewHook.add_hook(:core, "core/hooks/admin_users_show",
                           :main_app, :admin_users_show)
 ```
 

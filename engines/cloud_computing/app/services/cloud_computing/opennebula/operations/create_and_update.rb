@@ -17,7 +17,7 @@ module CloudComputing
         end
 
         def self.all_param_types
-          numeric_types + boolean_types
+          numeric_types + boolean_types + ['SET_HOSTNAME']
         end
 
         def initialize(client, env_params)
@@ -63,6 +63,8 @@ module CloudComputing
           hash = {}
           hash['CONTEXT'] = Hash.from_xml(template_info_results[1])['VMTEMPLATE']['TEMPLATE']['CONTEXT'] || {}
           hash['CONTEXT']['SSH_PUBLIC_KEY'] = param['public_keys']
+          hash['CONTEXT']['SET_HOSTNAME'] = param.value('SET_HOSTNAME') if param.value('SET_HOSTNAME').present?
+
           hash['USER'] = 'root'
           hash['OCTOSHELL_BOUND_TO_TEMPLATE'] = 'OCTOSHELL_BOUND_TO_TEMPLATE'
           hash['OCTOSHELL_ITEM_ID'] = item_id.to_s
@@ -78,7 +80,6 @@ module CloudComputing
           end
           vm_list = vm_list(param)
           return unless vm_list
-
           return if exists?(vm_list, item_id)
 
           instantiate_results = client.instantiate_vm(template_id, name, hash)
@@ -189,11 +190,47 @@ module CloudComputing
           end
         end
 
+        def update_conf(param)
+          vm_id = param['vm_id']
+          public_keys = param['public_keys']
+          host_name = param.value('SET_HOSTNAME')
+
+          callback = Callback.new(client, vm_id, State.alive_states)
+          callback.exit_condition do |vm_data|
+            context = vm_data['TEMPLATE']['CONTEXT']
+            context['SSH_PUBLIC_KEY'].to_s == public_keys.to_s &&
+              context['SET_HOSTNAME'].to_s == host_name.to_s
+          end
+
+          changed = []
+          result = callback.wait do
+            context = callback.vm_data['TEMPLATE']['CONTEXT']
+
+            if public_keys.to_s != context['SSH_PUBLIC_KEY'].to_s
+              context['SSH_PUBLIC_KEY'] = public_keys
+              changed << nil
+            end
+
+            if host_name.to_s != context['SET_HOSTNAME'].to_s
+              context['SET_HOSTNAME'] = host_name
+              changed << 'SET_HOSTNAME'
+            end
+            ['vm_updateconf'] +
+              client.vm_updateconf(vm_id, context)
+           end
+
+          changed.each do |key|
+            param.add_result_pos(key, *result) if result.is_a? Array
+          end
+
+        end
+
         def update(param)
 
           vm_id = param['vm_id']
           return unless vm_id
 
+          update_conf(param)
           vm_disk_resize(param)
           attach_or_detach_internet(param)
           resize(param)

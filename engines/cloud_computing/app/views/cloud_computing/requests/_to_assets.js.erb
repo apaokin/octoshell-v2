@@ -23,7 +23,7 @@ var field_creator = {
 
 };
 
-['number_field', 'boolean_field', 'select_field', 'fields'].forEach(function(type){
+['number_field', 'boolean_field','text_field', 'select_field', 'fields'].forEach(function(type){
   // var name = type + '_template';
   // console.log('script#' + type);
   // console.log($('script#' + type).html());
@@ -154,6 +154,16 @@ function render_fields(data){
 
         if(resource.content_type == 'boolean'){
           html += field_creator.boolean_field({
+            path: resource_path.concat(['value']),
+            label: resource.name,
+            help: resource.help,
+            value: resource_item.value || resource.value
+          });
+          return;
+        }
+
+        if(resource.content_type == 'text'){
+          html += field_creator.text_field({
             path: resource_path.concat(['value']),
             label: resource.name,
             help: resource.help,

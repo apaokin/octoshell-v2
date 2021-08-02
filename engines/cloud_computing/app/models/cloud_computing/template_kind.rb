@@ -42,25 +42,6 @@ module CloudComputing
       cloud_classes.map { |cloud_class| [cloud_class.model_name.human, cloud_class.to_s] }
     end
 
-    # def self.human_enum_name(enum_name, enum_value)
-    #   I18n.t("activerecord.attributes.#{model_name.i18n_key}.#{enum_name.to_s.pluralize}.#{enum_value}")
-    # end
-
-    # def self.human_cloud_type(enum_value)
-    #   human_enum_name(:cloud_type, enum_value)
-    # end
-
-    # def self.human_cloud_types
-    #   cloud_types.keys.map do |c|
-    #     [human_cloud_type(c), c]
-    #   end
-    # end
-
-    # def as_json(_options = nil)
-    #   {id: id, text: name }
-    # end
-
-
     def no_type?
       cloud_class.present?
     end

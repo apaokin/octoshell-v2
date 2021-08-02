@@ -118,8 +118,8 @@ module CloudComputing
       end
     end
 
-    def vm_updateconf(vm_id, string)
-      xmlrpc_send('vm.updateconf', vm_id, string)
+    def vm_updateconf(vm_id, hash)
+      xmlrpc_send('vm.updateconf', vm_id, hash)
     end
 
 

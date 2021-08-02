@@ -1,6 +1,7 @@
 require "octoface/engine"
 require "octoface/railtie"
-require "octoface/hook"
+require "octoface/code_hook"
+require "octoface/view_hook"
 require "octoface/octo_config"
 require "octoface/usage"
 require "octoface/bootstrap_form_helper"

@@ -4,7 +4,7 @@ module CloudComputing
     belongs_to :template, inverse_of: :resources
     has_many :resource_items, inverse_of: :resource, dependent: :destroy
 
-    validates :resource_kind, :template, :value, presence: true
+    validates :resource_kind, :template, presence: true
     validates :min, :max, :value, presence: true, numericality: { greater_than_or_equal_to: 0 },
                           if: :editable_number?
     validates :min, :max, absence: true, unless: :editable_number?
@@ -13,8 +13,9 @@ module CloudComputing
     validates :value, numericality: { only_integer: true },
                       if: :content_positive_integer?
 
-    validates :value, presence: true,
-                      numericality: { greater_than_or_equal_to: 0 }
+    validates :value, presence: true, unless: proc { |r| r.resource_kind.text? }
+
+    validates :value, numericality: { greater_than_or_equal_to: 0 }, if: :number?
 
 
     validates :value, inclusion: { in: ['0', '1'] }, if: proc { |r|
@@ -27,7 +28,7 @@ module CloudComputing
       # validates :max, inclusion: 1..2
       # errors.add(:max, :less_than_or_equal_to, count: 1..3)
       if template.template_kind && resource_kind.template_kind &&
-         template.template_kind != resource_kind.template_kind
+         !template.template_kind.is_or_is_descendant_of?(resource_kind.template_kind)
         errors.add(:_destroy, :wrong_template_kind)
       end
 
@@ -67,8 +68,12 @@ module CloudComputing
       "#{human_min} - #{human_max}"
     end
 
+    def number?
+      resource_kind.positive_integer? || resource_kind.decimal?
+    end
+
     def editable_number?
-      editable && !resource_kind.boolean?
+      editable && number?
     end
 
     # def name_value

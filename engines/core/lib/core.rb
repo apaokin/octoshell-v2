@@ -27,7 +27,7 @@ require 'core/interface'
 
 
 module Core
-  ::Octoface::Hook.add_hook(:core, "core/hooks/admin_users_show",
+  ::Octoface::ViewHook.add_hook(:core, "core/hooks/admin_users_show",
                             :main_app, :admin_users_show)
   mattr_accessor :user_class
 

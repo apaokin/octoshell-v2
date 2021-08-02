@@ -47,22 +47,22 @@ module CloudComputing
       end
     end
 
-    def self.send_email(method, *args, **kwargs)
-      perform(CloudComputing::ApplicationMailer, method, *args, **kwargs)
+    def self.send_email(method, *args)
+      perform(CloudComputing::Mailer, method, *args)
     end
 
-    def self.perform(klass, method, *args, **kwargs)
+    def self.perform(klass, method, *args)
       return unless klass.respond_to? method
 
       if perform_async?
-        CloudComputing::NotifierWorker.send(klass.to_s, method, *args, **kwargs)
+        CloudComputing::NotifierWorker.perform_async(klass.to_s, method, *args)
       else
-        klass.send(method, *args, **kwargs)
+        klass.send(method, *args).deliver!
       end
     end
 
     def self.perform_async?
-      false
+      true
     end
 
   end

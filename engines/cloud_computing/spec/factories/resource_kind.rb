@@ -40,5 +40,13 @@ FactoryBot.define do
       content_type { 'positive_integer' }
       measurement { 'm' }
     end
+
+    trait :hostname do
+      name { 'HOSTNAME' }
+      content_type { 'text' }
+      identity { 'SET_HOSTNAME' }
+    end
+
+
   end
 end

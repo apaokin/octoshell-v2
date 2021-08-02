@@ -7,5 +7,10 @@ require "cloud_computing/support_methods" if defined?(Octoface)
 
 
 module CloudComputing
-  # Your code goes here...
+  ::Octoface::CodeHook.add_hook(:cloud_computing, :core, :not_active_project) do |project|
+    access = Access.approved.find_by(for: project)
+    next unless access
+
+    access.prepare_to_deny!
+  end
 end

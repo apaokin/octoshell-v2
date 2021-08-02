@@ -10,7 +10,7 @@ FactoryBot.define do
       # resource_kind { CloudComputing::ResourceKind.find_by_identity('MEMORY') || create(:cloud_resource_kind, :memory)  }
       min { 1 }
       value { 1.5 }
-      max { 2 }
+      max { 3 }
       editable { true }
     end
 
@@ -18,7 +18,7 @@ FactoryBot.define do
       # resource_kind { CloudComputing::ResourceKind.find_by_identity('CPU') || create(:cloud_resource_kind, :cpu, template_kind: template.template_kind ) }
       min { 1 }
       value { 2 }
-      max { 3 }
+      max { 4 }
       editable { true }
     end
 
@@ -38,6 +38,13 @@ FactoryBot.define do
       value { 1000 }
       editable { false }
     end
+
+    trait :hostname do
+      # resource_kind { CloudComputing::ResourceKind.find_by_name('Imaginary') || create(:cloud_resource_kind, :imaginary) }
+      value { '' }
+      editable { true }
+    end
+
 
   end
 end

@@ -32,6 +32,8 @@ div class="row"
             - if ff.object.resource_kind.boolean?
               = ff.form_group :value, help: t('.value_help')
                 = ff.check_box :value, {}, '1', '0'
+            - elsif ff.object.resource_kind.text?
+              = ff.text_field :value, options.dup.merge(help: t('.value_help'))
             - else
               = ff.number_field :value, options.dup.merge(help: t('.value_help'))
           div.col-md-3

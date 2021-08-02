@@ -82,6 +82,11 @@ module Core
 
     after_create :engage_owner
 
+    after_save do
+      unless active?
+        Octoface::CodeHook.register_place(:core, :not_active_project, self)
+      end
+    end
     # def human_state_name
     #   state
     # end

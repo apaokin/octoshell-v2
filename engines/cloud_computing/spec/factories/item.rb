@@ -8,8 +8,10 @@ FactoryBot.define do
                   resource.value.to_i + 1
                 elsif resource.resource_kind.decimal?
                   resource.value.to_f + 1
-                else
+                elsif resource.resource_kind.boolean?
                   '1'
+                else
+                  ''
                 end
         item.resource_items.create!(resource: resource, value: value)
       end

@@ -9,22 +9,10 @@ module CloudComputing
 
     has_many :requests, inverse_of: :access
 
-    accepts_nested_attributes_for :new_left_items, :old_left_items,
+    accepts_nested_attributes_for :left_items,:new_left_items, :old_left_items,
                                   allow_destroy: true
-
-    # has_many :virtual_machines, through: :left_items,
-    #                             class_name: 'CloudComputing::NebulaIdentity',
-    #                             source: :virtual_machines
     validates :for, :user, :allowed_by, presence: true
     validates :state, uniqueness: { scope: [:for_id, :for_type] }, if: :approved?
-    # validates :request_id, uniqueness: true, if: :request
-
-    # pessimistic locking
-    # Оживление виртуалок
-    # прокси для отправки
-    # результаты логгирования
-    # vcpu
-    # RESCUE
 
     aasm(:state) do
       state :created, initial: true
@@ -37,11 +25,11 @@ module CloudComputing
         transitions from: :created, to: :approved do
           guard do
             self.for && items.exists? && items_filled? &&
-              Access.where(for: self.for).approved.empty?
+              same_accesses.approved.empty?
           end
 
           after do
-            requests.each(&:approve!)
+            requests.sent.each(&:approve!)
             create_and_update_vms
           end
 
@@ -81,19 +69,12 @@ module CloudComputing
       end
     end
 
+    def self.mergeable
+      where(state: %w[approved created])
+    end
 
-    def add_item(item)
-      pos = if item.item_in_access
-        old_left_items.new(item.slice('template_id', 'item_id'))
-      else
-        new_left_items.new(item.slice('template_id', 'item_id'))
-      end
-
-      item.resource_items.each do |r_p|
-        pos.resource_items
-           .build(r_p.attributes.slice('resource_id', 'value'))
-      end
-      pos
+    def same_accesses
+      Access.where(for: self.for).where.not(id: self)
     end
 
     def virtual_machines
@@ -106,16 +87,13 @@ module CloudComputing
 
       self.for = request.for
       self.user = request.created_by
-      pos_hash = Hash[request.items.map do |item|
-        [item, add_item(item)]
-      end]
+      copy_items(request)
+    end
 
-      request.items.each do |item|
-        from_item = pos_hash[item]
-        item.from_links.each do |link|
-          from_item.from_links.new(to: pos_hash[link.to])
-        end
-      end
+    def merge_with(merge_access)
+      merge_access.copy_items(self)
+      merge_access.save!
+      destroy!
     end
 
     def create_and_update_vms
@@ -153,6 +131,37 @@ module CloudComputing
       update!(finished_sync_at: DateTime.now)
     end
 
+    def vm_created
+      Notifier.vm_created(self)
+    end
+
+    def copy_items(holder)
+      pos_hash = Hash[holder.items.map do |item|
+        [item, add_item(item)]
+      end]
+      holder.items.each do |item|
+        from_item = pos_hash[item]
+        item.from_links.each do |link|
+          from_item.from_links.new(to: pos_hash[link.to])
+        end
+      end
+    end
+
+    private
+
+    def add_item(item)
+      pos = if item.item_in_access
+              old_left_items.new(item.slice('template_id', 'item_id'))
+            else
+              new_left_items.new(item.slice('template_id', 'item_id'))
+            end
+
+      item.resource_items.each do |r_p|
+        pos.resource_items
+           .build(r_p.attributes.slice('resource_id', 'value'))
+      end
+      pos
+    end
 
   end
 end

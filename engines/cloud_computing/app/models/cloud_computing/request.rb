@@ -64,6 +64,9 @@ module CloudComputing
 
       event :refuse do
         transitions from: :sent, to: :refused
+        after do
+          Notifier.request_refused(id)
+        end
       end
 
 

@@ -4,8 +4,8 @@ module CloudComputing
     include Sidekiq::Worker
     sidekiq_options retry: 2, queue: :cloud_computing_task_worker
 
-    def perform(method, *args, **kwargs)
-      CloudComputing::CloudProvider.send(method, *args, **kwargs)
+    def perform(method, *args)
+      CloudComputing::CloudProvider.send(method, *args)
     end
   end
 end

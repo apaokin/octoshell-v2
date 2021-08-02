@@ -10,7 +10,7 @@ div class="page-header"
         td = key
         td = value.map(&:to_s).join(', ')
 table class="table table-bordered table-striped"
-  - if(hooks = Octoface::Hook.instances[@role.role])
+  - if(hooks = Octoface::ViewHook.instances[@role.role])
       th class="col-xs-3" #{t '.name_of_hook'}
       th class="col-xs-9" #{t '.partials'}
       - hooks.values.each do |hook|

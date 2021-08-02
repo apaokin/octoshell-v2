@@ -85,7 +85,7 @@ css:
                         - if @admin
                           = link_to a.human_action, change_state_admin_virtual_machine_path(n_i, params: { vm_action: a.action }),
                             class: 'dropdown-item',
-                            method: :patch
+                            method: :patch, data: { confirm: a.human_alert }
                         - else
                           = link_to a.human_action, change_state_virtual_machine_path(n_i, params: { vm_action: a.action }),
                             class: 'dropdown-item',

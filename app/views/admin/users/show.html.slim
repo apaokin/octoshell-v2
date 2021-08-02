@@ -34,7 +34,7 @@ ul class="list-unstyled"
   - @user.groups.each do |group|
     li = group.name
 
-= register_hook(:main_app,:admin_users_show, { user: @user })
+= register_hook_place(:main_app,:admin_users_show, { user: @user })
 /= render "core/admin/employments/list", employments: @user.employments.where(state: :active).order(primary: :desc, created_at: :desc)
 
 /h4 = User.human_attribute_name(:projects)

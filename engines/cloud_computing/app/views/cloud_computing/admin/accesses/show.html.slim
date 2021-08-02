@@ -10,21 +10,29 @@ css:
 .well
   = link_to t('actions.edit'), edit_admin_access_path(@access), class: 'btn btn-primary'
   - if @access.may_approve?
-    = link_to t('.approve'), approve_admin_access_path, class: "btn btn-info", method: :patch
+    = link_to t('.approve'), approve_admin_access_path(@access), class: "btn btn-info", method: :patch
   - if @access.may_prepare_to_deny?
-    = link_to t('.prepare_to_deny'), prepare_to_deny_admin_access_path, class: "btn btn-danger",
+    = link_to t('.prepare_to_deny'), prepare_to_deny_admin_access_path(@access), class: "btn btn-danger",
       method: :patch, data: { confirm: t('.prepare_to_deny_confirm') }
   - if @access.may_finish?
-    = link_to t('.finish'), finish_admin_access_path, class: "btn btn-danger",
-      method: :patch, data: { confirm: t('.finish_confirm') }
+    = link_to t('.finish'), finish_admin_access_path(@access), class: "btn btn-danger",
+        method: :patch, data: { confirm: t('.finish_confirm') }
   - if @access.may_deny?
-    = link_to t('.finish'), deny_admin_access_path, class: "btn btn-danger",
+    = link_to t('.finish'), deny_admin_access_path(@access), class: "btn btn-danger",
       method: :patch, data: { confirm: t('.finish_confirm') }
   - if @access.approved?
-    = link_to t('.update_vm_state'), update_vm_state_admin_access_path, class: "btn btn-primary", method: :put
+    = link_to t('.update_vm_state'), update_vm_state_admin_access_path(@access), class: "btn btn-primary", method: :put
   - if @access.approved?
-    = link_to t('.reinstantiate'), reinstantiate_admin_access_path, class: "btn btn-primary", method: :patch
+    = link_to t('.reinstantiate'), reinstantiate_admin_access_path(@access), class: "btn btn-primary", method: :patch
+- if @access.created? && @access.same_accesses.any?
+  .row
+    .col-md-6
+      = t('.merge_help', id: @access.id)
+      = bootstrap_form_tag url: merge_admin_access_path(@access),  layout: :horizontal do |f|
+        = f.select :merge_id, form_same_accesses(@access), label: t('.merge_with')
+        = f.form_group do
+          = f.submit t(".merge")
 
 
-- attrs = %i[state user finish_date_or_nil allowed_by for]
+- attrs = %i[state user started_sync_at finished_sync_at finish_date_or_nil allowed_by for]
 = render partial: 'cloud_computing/accesses/show', locals: { attrs: attrs }

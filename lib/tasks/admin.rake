@@ -21,4 +21,8 @@ namespace :admin do
     Octoface::OctoConfig.create_abilities!
   end
 
+  task clear_sidekiq: :environment do
+    Sidekiq.redis(&:flushdb)
+  end
+
 end

@@ -29,10 +29,15 @@ ru:
         request: Заявка
         state: Состояние
         user: Пользователь
+        user_id: Пользователь
+        started_sync_at: Последняя синхронизация начата
+        finished_sync_at: Последняя синхронизация закончена
       cloud_computing/api_log:
         action: Действие
         created_at: Создано
         log: Текст лога
+        success: Удачно?
+        resource: Ресурс
       cloud_computing/cluster:
         core_cluster: Кластер из модуля Core
         core_cluster_id: Кластер из модуля Core
@@ -46,6 +51,7 @@ ru:
         to: Из
         to_id: К
       cloud_computing/item:
+        template: Шаблон
         virtual_machine: Виртуальная машина
       cloud_computing/request:
         admin_comment: Комментарий администратора
@@ -72,19 +78,20 @@ ru:
           boolean: Двоичное число
           decimal: Десятичное число
           positive_integer: Натуральное число
+          text: текст
         description: Описание
         help: Помощь в заполнении
         measurement: Единица
         name: Название
-        template_kind: Вид единиц облачного кластера
-        template_kind_id: Вид единиц облачного кластера
+        template_kind: Вид шаблона облачного кластера
+        template_kind_id: Вид шаблона облачного кластера
       cloud_computing/template:
         available: Доступно
         cluster: Кластер
         cluster_id: Кластер
         description: Описание
         editable_resources: Редактируемые ресурсы
-        identity: Opennebula id
+        identity: cloud id
         max_count: Максимум для запроса
         name: Название
         new_requests: Подавать новые заявки
@@ -94,6 +101,7 @@ ru:
         uneditable_resources: Нередактируемые ресурсы
       cloud_computing/template_kind:
         cloud_type: Тип на кластере
+        cloud_class: Тип на кластере
         cloud_types:
           disk: Диск
           'no': Не имеет значения
@@ -102,6 +110,19 @@ ru:
         name: Название
         parent: Отцовский вид
         parent_id: Родительский тип
+      cloud_computing/virtual_machine:
+        address: Адрес
+        human_state: Состояние
+        identity: Id в облаке
+        inner_address: Адрес во внутренней сети
+        internet_address: Интернет адрес
+        last_info: Состояние обновлено
+        name: Название
+        state: Состояние
+        states:
+          error: В ошибочном состоянии
+          poweroff: Выключена
+          running: Работает
       cloud_computing/virtual_machine_action:
         actions:
           poweroff: Выключить
@@ -122,57 +143,20 @@ ru:
             машине. Вы уверены?
           resume: Включить
           undeploy-hard: Undeploy
-      cloud_computing/virtual_machine:
-        states:
-          running: Работает
-          poweroff: Выключена
-          error: В ошибочном состоянии
-        address: Адрес
-        human_state: Состояние
-        identity: Id в облаке
-        inner_address: Адрес во внутренней сети
-        internet_address: Интернет адрес
-        last_info: Состояние обновлено
-        name: Название
-        state: Состояние
     errors:
       models:
-        cloud_computing/position:
-          attributes:
-            amount:
-              greater_than_max_count: Вы запросили больше единиц, чем доступно для
-                запроса
         cloud_computing/resource:
           attributes:
             _destroy:
-              wrong_template_kind: Этот ресурс не соответствует типу единицы
+              wrong_template_kind: Этот ресурс не соответствует типу шаблона
         cloud_computing/resource_item:
           attributes:
             value:
               range: Значение должно быть в интервале [%{min},%{max}]
     models:
+      cloud_computing/cloud: Облако
       cloud_computing/virtual_machine: Виртуальная машина
   cloud_computing:
-    mailer:
-      prepared_to_deny:
-        subject: Отказано в доступе к облаку
-        msg: Вашему проекту "%{project_link}" отказано в доступе "%{access_link}" к облачным ресурсам СКЦ МГУ.
-      prepared_to_finish:
-        subject: Доступ к облаку окончен
-        msg: Доступ "%{access_link}" для Вашего проекта "%{project_link}" к облачным ресурсам СКЦ МГУ окончен.
-      request_refused:
-        subject: Заявка отклонена
-        msg: Ваша заявка "%{request_link}" для проекта "%{project_link}" на облачные ресурсы отклонена.
-      vm_created:
-        subject: Виртуальные машины готовы!
-        msg: >
-          Для Вашего проекта "%{project_link}" были созданы (или изменены) виртуальные машины.
-          Информация доступна на странице Вашего доступа: %{access_link}
-      vm_error:
-        subject: Ошибка при взаимодействии с облаком
-        msg: >
-          При выполнении действий в облаке у виртуальной машины %{item_log_link} произошли ошибки.
-
     accesses:
       add_keys:
         updated: Новые ключи успешно добавлены
@@ -180,8 +164,6 @@ ru:
         title: Доступы
       show:
         add_keys: Обновить ключи участников проекта
-        update_vm_state: Обновить состояние
-        reinstantiate: Синхронизировать
         add_to_request: Запросить изменение ресурсов
         help: |-
           Вы можете заходить на каждую виртуальную машину под логином root.
@@ -199,20 +181,22 @@ ru:
         prepare_to_finish_confirm: >-
           Вы уверены, что хотите завершить работу с данным доступом? Виртуальные машины
           будут недоступны, а данные внутри  них -- стёрты.
+        reinstantiate: Синхронизировать
         show_logs: Логи
         template: 'Шаблон: '
         title: Доступ#%{id}
+        update_vm_state: Обновить состояние
         vm_info: Обновить состояние
       table:
         no_accesses_found: Не найдено доступов
     admin:
       accesses:
         create_from_request:
-          add_items: 'Добавить'
+          add_items: Добавить
           finish_date_help: Если это поле пусто, то доступ без даты окончания
           new_left_items: Новые единицы
           old_left_items: Запрос на изменение существующих единиц
-          title: 'Добавить к доступу'
+          title: Добавить к доступу
         edit:
           title: Редактировать доступ к виртуальной машине
         edit_links:
@@ -222,7 +206,7 @@ ru:
         edit_vm:
           title: Редактировать связи доступа к виртуальной машине
         form:
-          add_items: 'Добавить'
+          add_items: Добавить
           add_positions: Добавить позицию
           finish_date_help: Если это поле пусто, то доступ без даты окончания
           new_left_items: Новые единицы
@@ -237,6 +221,10 @@ ru:
         left_position_fields:
           add_positions: Добавить виртуальную машину
           remove_position: Удалить виртуальную машину
+        merge:
+          created_error: Доступ больше не находится в состоянии "создан"
+          merge_error: Доступ не найден
+          success: Слияние прошло удачно
         new:
           title: Создание нового доступа
         show:
@@ -249,15 +237,36 @@ ru:
           finish_confirm: >-
             Данное действие сотрёт данные пользователя на жестких дисках виртуальных
             машин данного доступа после одобрения администратором. Вы уверены?
+          merge: 'Слить'
+          merge_help: >-
+            У проекта имеются другие доступы к облаку. Вы можете слить
+            данный доступ с другим и перенести все единицы туда. Доступ
+            с данным id(%{id}) будет удалён.
+          merge_with: 'Слить с '
           prepare_to_deny: Отозвать доступ
           prepare_to_deny_confirm: >-
             Данное действие сотрёт данные пользователя на жестких дисках виртуальных
             машин данного доступа после одобрения администратором. Вы уверены?
-
-          reinstantiate: Попытаться создать виртуальные машины
+          reinstantiate: Синхронизировать с облаком
           title: Доступ#%{id}
+          update_vm_state: Обновить состояние виртуальных машин
         table:
           no_accesses_found: Доступов не найдено
+        update_vm_state:
+          info: Состояния виртуальных машин обновлены
+      clouds:
+        edit:
+          title: Редактировать
+        index:
+          new_cloud: Новое облако
+          title: Список облаков
+        new:
+          title: Новое облако
+        show:
+          title: Облако
+        table:
+          confirm: Облако,а также его шаблоны будут удалены. Вы уверены?
+          no_clouds_found: Не найдено облаков
       clusters:
         edit:
           title: Редактировать кластер
@@ -297,9 +306,9 @@ ru:
           errors_found: Введены неверные данные
           updated_successfully: Усешно обновлено
         create:
-          added_successfully: Вид единицы облачного кластера добавлен!
+          added_successfully: Вид шаблона облачного кластера добавлен!
         destroy:
-          destroyed_successfully: Вид единицы облачного кластера удалён!
+          destroyed_successfully: Вид шаблона облачного кластера удалён!
         edit:
           title: Редактировать вид c названием %{template_kind}
         edit_all:
@@ -309,46 +318,47 @@ ru:
             новой вершины вы можете указать её название. С помощью зажатой левой кнопки
             мыши можно перемещать вершины.
           loading_tree: Дерево загружается
-          tree: Иерархия единиц облачного кластера
+          tree: Иерархия шаблонов облачного кластера
         form:
           add_value: Добавить условие соединения с другими видами
           remove_value: Удалить условие соединения
         index:
           edit_all: Редактировать дерево
           no_parent: Без родителя (это вершина корневая)
-          no_template_kinds_found: Нет видов единиц облачного кластера
-          title: Список видов единиц облачного кластера
+          no_template_kinds_found: Нет видов шаблонов облачного кластера
+          title: Список видов шаблонов облачного кластера
         load_templates:
-          added_templates: Добавленные единицы
+          added_templates: Добавленные шаблоны
         show:
-          title: "%{template_kind} - вид единиц облачного кластера"
+          title: "%{template_kind} - вид шаблона облачного кластера"
         update:
           updated_successfully: Вид успешно отредактирован
       templates:
         edit:
-          title: Редактировать единицу %{template}
+          title: Редактировать шаблон %{template}
         form:
           value_help: >-
             Если ресурс редактируемый, то значение будет трактоваться как значение
             по-умолчанию.
         index:
-          confirm: Вы действительно хотите удалить эту единицу?
+          confirm: Вы действительно хотите удалить этот шаблон?
           delete: Удалить
           edit: Редактировать
-          new_template: Новая единица
-          no_items_found: Нет единиц
-          title: Список единиц облачного кластера
+          new_template: Новый шаблон
+          no_items_found: Нет шаблонов
+          title: Список шаблонов облачного кластера
         new:
-          title: Новая единица
+          title: Новый шаблон
         show:
-          title: Единица облачного кластера
+          title: Шаблон облачного кластера
         table:
-          confirm: Вы действительно хотите удалить данную единицу?
-          no_templates_found: 'Не найдено единиц'
+          confirm: Вы действительно хотите удалить даный шаблон?
+          no_templates_found: Не найдено шаблонов
       virtual_machines:
         change_state:
+          info: Запрос на выполнение действия послан
           success: 'Успешно обновлено '
-          wrong_action: " действие не валидно для текущего состояние"
+          wrong_action: " действие не валидно для текущего состояния"
         vm_info:
           success: Состояние успешно обновлено
     admin_submenu:
@@ -357,22 +367,53 @@ ru:
       index:
         created_after: Создано после
         created_before: Создано до
+        return_to_access: Вернуться к доступу
         title: Логи виртуальной машины c ID=%{id}
       table:
         no_api_logs_found: Не найдено логов
     engine_submenu:
       access_list: Доступы
+      cloud_list: Облака
       cluster_list: Кластеры
       request_list: Заявки
       resource_kind_list: Виды ресурсов
-      template_kind_list: Виды единиц
-      template_list: Единицы облачного кластера
+      template_kind_list: Виды шаблонов
+      template_list: Шаблоны облачного кластера
+    mailer:
+      assign_msg_with_project:
+        msg: 'TRME '
+        subject: 'TRME '
+      prepared_to_deny:
+        msg: >-
+          Вашему проекту "%{project_link}" отказано в доступе "%{access_link}" к облачным
+          ресурсам СКЦ МГУ.
+        subject: Отказано в доступе к облаку
+      prepared_to_finish:
+        msg: >-
+          Доступ "%{access_link}" для Вашего проекта "%{project_link}" к облачным
+          ресурсам СКЦ МГУ окончен.
+        subject: Доступ к облаку окончен
+      request_refused:
+        msg: >-
+          Ваша заявка "%{request_link}" для проекта "%{project_link}" на облачные
+          ресурсы отклонена.
+        subject: Заявка отклонена
+      vm_created:
+        msg: >
+          Для Вашего проекта "%{project_link}" были созданы (или изменены) виртуальные
+          машины. Информация доступна на странице Вашего доступа: %{access_link}
+        subject: Виртуальные машины готовы!
+      vm_error:
+        msg: >
+          При выполнении действий в облаке у виртуальной машины %{item_log_link} произошли
+          ошибки.
+        subject: Ошибка при взаимодействии с облаком
     no_date: Без даты окончания
     requests:
       add_item_from_access:
         added: >-
-          Виртуальная машина успешно добавлена в заявку на изменение.
-          Отредактировать заявку вы можете на странице "Новая заявка"
+          Виртуальная машина успешно добавлена в заявку на изменение. Отредактировать
+          заявку вы можете на странице "Новая заявка"
       created_request:
         cancel: Отозвать заявку
         edit_created_request: Редактировать новую заявку
@@ -380,19 +421,17 @@ ru:
         fill_positions: Не введены нередактируемые ресурсы
         instruction: >-
           Ваша заявка состоит из единиц облачного кластера, которые представляют из
-          себя виртуальные машины, подсоединяемые диски и т.д. Добавляйте виртуальные
-          машины на вкладке "Единицы облачного кластера". Там же есть информация и
-          по другим дополнительным единицам, но добавить Вы их можете только к определённой
-          виртуальной машине через "редактировать новую заявку". Заявку можно отправить
-          на рассмотрение с помощью кнопки на этой странице, но только при заполненных
-          полях проекта и наличии хотя бы одной виртуальной машины в заявке.
+          себя виртуальные машины, подсоединяемые диски и т.д. Добавляйте
+          виртуальные машины в заявку на вкладке "Единицы облачного кластера" или же через "редактироваться
+          новую заявку". Заявку можно отправить на рассмотрение с помощью кнопки на этой странице,
+          но только при заполненных полях проекта и наличии хотя бы одной виртуальной машины в заявке.
         title: Новая заявка
         to_sent: Отправить заявку
       edit:
-        copy: 'Копировать'
+        copy: Копировать
         help: Введите значение от {{min}} до {{max}}. {{help}}
       edit_created_request:
-        add_items: 'Добавить'
+        add_items: Добавить
         add_positions: Добавить позицию
         finish_date_help: Если это поле пусто, то доступ без даты окончания
         help: Введите значение от {{min}} до {{max}}. {{help}}
@@ -451,7 +490,7 @@ ru:
       table:
         no_requests_found: Нет заявок
       to_assets:
-        destroy: 'Удалить?'
+        destroy: Удалить?
       update_created_request:
         updated_successfully: Заявка обновлена
       update_links:
@@ -460,29 +499,29 @@ ru:
       index:
         edit_all: Редактировать дерево
         no_parent: Без родителя (это вершина корневая)
-        no_template_kinds_found: Нет видов единиц облачного кластера
-        title: Список видов единиц облачного кластера
+        no_template_kinds_found: Нет видов шаблонов облачного кластера
+        title: Список видов шаблонов облачного кластера
       show:
-        load_templates: 'Обновить шаблоны из OpeNNebula '
+        load_templates: Обновить шаблоны из Облака
         no_parent: Без родителя (это вершина корневая)
-        title: Вид единиц
+        title: Вид шаблона
     templates:
       destroy:
         destroyed_successfully: Успешно удалено
       index:
-        title: Список единиц облачного кластера
+        title: Список шаблонов облачного кластера
       resource_items_fields:
         help: Введите значение от <b>{{min}}</b> до <b>%{{max}}</b>.
       resources:
         no_editable_resources: 'Нет редактируемых ресурсов '
         no_uneditable_resources: Нет Нередактируемых ресурсов
       show:
-        add: 'Добавить в заявку'
+        add: Добавить в заявку
         add_position: Добавить ещё одну позицию
         remove_position: Удалить из заявки
         title: Единица %{template}
       table:
-        no_templates_found: Нет единиц облачного кластера
+        no_templates_found: Нет шаблонов облачного кластера
         requested: Вы запросили
       update:
         errors: При редактировании были найдены ошибки
@@ -491,6 +530,7 @@ ru:
       cloud_computing: Облако
     virtual_machines:
       change_state:
+        info: Запрос на выполнение действия послан
         success: Состояние успешно обновлено
         wrong_action: Неверное действие для данного состояния
       vm_info:

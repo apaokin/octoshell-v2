@@ -1,7 +1,5 @@
 module CloudComputing
   module ApplicationHelper
-
-
     def cloud_computing_submenu_items
       menu = Face::MyMenu.new
       menu.add_item_without_key(t("cloud_computing.engine_submenu.template_list"),
@@ -21,19 +19,18 @@ module CloudComputing
 
     def cloud_computing_admin_submenu_items
       menu = Face::MyMenu.new
-      menu.add_item_without_key(t("cloud_computing.engine_submenu.resource_kind_list"),
-                                admin_resource_kinds_path, 'cloud_computing/admin/resource_kinds')
-      menu.add_item_without_key(t("cloud_computing.engine_submenu.template_list"),
-                                admin_templates_path, 'cloud_computing/admin/templates')
-      menu.add_item_without_key(t("cloud_computing.engine_submenu.template_kind_list"),
-                                admin_template_kinds_path, 'cloud_computing/admin/template_kinds')
       menu.add_item_without_key(t("cloud_computing.engine_submenu.request_list"),
                                 admin_requests_path, 'cloud_computing/admin/requests')
       menu.add_item_without_key(t("cloud_computing.engine_submenu.access_list"),
                                 admin_accesses_path, 'cloud_computing/admin/accesses')
+      menu.add_item_without_key(t("cloud_computing.engine_submenu.template_list"),
+                                admin_templates_path, 'cloud_computing/admin/templates')
+      menu.add_item_without_key(t("cloud_computing.engine_submenu.template_kind_list"),
+                                admin_template_kinds_path, 'cloud_computing/admin/template_kinds')
       menu.add_item_without_key(t("cloud_computing.engine_submenu.cloud_list"),
                                 admin_clouds_path, 'cloud_computing/admin/clouds')
-
+      menu.add_item_without_key(t("cloud_computing.engine_submenu.resource_kind_list"),
+                                admin_resource_kinds_path, 'cloud_computing/admin/resource_kinds')
       menu.items(self)
     end
 
@@ -66,6 +63,17 @@ module CloudComputing
         %i[measurement help description] => nil
       }
     end
+
+    def template_show_attrs(template)
+      {
+        name: nil,
+        template_kind_id: link_to(template.template_kind.name, template.template_kind),
+        description: nil,
+        new_requests: t(template.new_requests),
+        identity: nil
+      }
+    end
+
 
     def admin_template_show_attrs(template)
       {

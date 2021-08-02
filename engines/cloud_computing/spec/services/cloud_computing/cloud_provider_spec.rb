@@ -35,8 +35,8 @@ module CloudComputing
       #                                 template_kind: @template1.template_kind,
       #                                 cloud: @cloud, identity)
       @access = FactoryBot.create(:cloud_access)
-      @item1 = FactoryBot.create(:cloud_item, template: @template1, holder: @access)
-      @item2 = FactoryBot.create(:cloud_item, template: @template1, holder: @access)
+      @item1 = FactoryBot.create(:cloud_item, template: @template1, holder: @access, id: 100)
+      @item2 = FactoryBot.create(:cloud_item, template: @template1, holder: @access, id: 101)
 
       # 2.times do
       #   user = create(:user)
@@ -56,6 +56,7 @@ module CloudComputing
           [i, i.virtual_machine,
            i.all_resources.map { |r| r.attributes.merge(kind: r.resource_kind.name, class: r.class ) }]
         end)
+        pp @access.items.map(&:api_logs)
         puts 'virtual machines have been created'.green
         $stdin.gets
         CloudProvider.create_and_update_vms(@access)
@@ -78,6 +79,8 @@ module CloudComputing
                       item_resource.value.to_i + 1
                     elsif item_resource.resource.resource_kind.decimal?
                       item_resource.value.to_f + 1
+                    elsif item_resource.resource.resource_kind.text?
+                      'CHANGED_DEFAULT_AAAAAA'
                     else
                       '0'
                     end
@@ -85,6 +88,14 @@ module CloudComputing
                                             value: value)
           end
         end
+        2.times do
+          user = create(:user)
+          @access.for.members.create!(user: user, project_access_state: 'allowed')
+          key = SSHKey.generate(comment: user.email)
+          Core::Credential.create!(user: user, name: 'example key',
+                                   public_key: key.ssh_public_key)
+        end
+
         $stdin.gets
         CloudProvider.create_and_update_vms(@access)
         pp(@access.new_left_items.reload.map do |i|

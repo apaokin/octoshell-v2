@@ -7,7 +7,7 @@
 .row
   .col-md-6
     blockquote
-      - admin_template_show_attrs(@template).each do |key, value|
+      - template_show_attrs(@template).each do |key, value|
           - Array(key).each do |key|
               h4
                 b = CloudComputing::Template.human_attribute_name key

@@ -8,7 +8,7 @@ FactoryBot.define do
       sequence(:name) { |n| "Virtual machine kind #{n}" }
 
       resource_kinds do
-        %i[memory cpu disk internet imaginary].map do |trait|
+        %i[memory cpu disk internet imaginary hostname].map do |trait|
           create(:cloud_resource_kind, trait)
         end
       end

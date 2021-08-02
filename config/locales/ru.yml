@@ -8,14 +8,6 @@ ru:
           per-user: 'TRME '
           site-wide: 'TRME '
   "!": "!"
-  mailer:
-    footer:
-      maintained_by: Лаборатория Параллельных информационных технологий НИВЦ МГУ.
-      octo_regards: С уважением, Octoshell.
-    header:
-      hello_known_name: Здравствуйте, %{name}!
-      hello_unknown: Здравствуйте!
-
   abilities:
     accesses:
       manage: Полный доступ к Ключам на Кластере
@@ -288,6 +280,13 @@ ru:
           other: Показаны <b>все %{count}</b>
           zero: Показано <b>0</b>
   hidden: 'TRME '
+  mailer:
+    footer:
+      maintained_by: Лаборатория Параллельных информационных технологий НИВЦ МГУ.
+      octo_regards: С уважением, Octoshell.
+    header:
+      hello_known_name: Здравствуйте, %{name}!
+      hello_unknown: Здравствуйте!
   main_menu:
     admin_area: Кабинет администратора
     wiki: Справка
