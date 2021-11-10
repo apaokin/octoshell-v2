@@ -2,7 +2,7 @@ module CloudComputing
   class Item < ApplicationRecord
     # cloud_computing_items
     belongs_to :template, inverse_of: :items
-    belongs_to :holder, polymorphic: true, autosave: true, inverse_of: :items
+    belongs_to :holder, polymorphic: true, inverse_of: :items
     belongs_to :item_in_access, class_name: 'CloudComputing::Item',
                                 foreign_key: :item_id
 
@@ -29,7 +29,6 @@ module CloudComputing
     has_many :resource_items, inverse_of: :item, dependent: :destroy
 
     accepts_nested_attributes_for :from_links, :resource_items, :from_items, allow_destroy: true
-    validates_associated :resource_items
 
     validates :template, :holder, presence: true
 
@@ -38,13 +37,6 @@ module CloudComputing
                               status: 'created', created_by_id: user
                             })
     end)
-
-    # validate do
-    #   errors.add(:holder, :invalid)
-    # end
-    # after_initialize do |item|
-    #   puts item.holder.inspect.red
-    # end
 
     def self.without_virtual_machine
       joins(:virtual_machine).where(cloud_computing_virtual_machines: { id: nil } )

@@ -37,7 +37,10 @@ css:
   .container
     - @access.new_left_items.order(:created_at).each do |item|
       .col-md-6
-        h4 = link_to("#{item.template.name}##{item.id}", item.template)
+        - if @admin
+          h4 = link_to("#{item.template.name}##{item.id}", [:admin, item.template])
+        - else
+          h4 = link_to("#{item.template.name}##{item.id}", item.template)
         - item.all_resources.map  do |resource|
           - if resource.is_a?(CloudComputing::ResourceItem) && resource.request_resource_item
             div

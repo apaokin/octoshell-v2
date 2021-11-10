@@ -1,6 +1,6 @@
 module CloudComputing
   class ResourceItem < ApplicationRecord
-    belongs_to :item, inverse_of: :resource_items, autosave: true
+    belongs_to :item, inverse_of: :resource_items
     belongs_to :resource, -> { where(editable: true) }, inverse_of: :resource_items
     has_one :resource_kind, through: :resource
 
@@ -27,14 +27,6 @@ module CloudComputing
 
     before_validation do
       self.value = value.to_i if only_integer?
-    end
-
-    validate do
-      if value.to_i < -1
-        errors.add(:value, :invalid)
-        pp self
-        puts 'VALUE < 1'.red
-      end
     end
 
     validate do

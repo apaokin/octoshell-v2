@@ -15,6 +15,7 @@ if Sessions.link?(:project)
   require "sessions/report_project"
   require "sessions/session_project"
 end
+
 if Sessions.link?(:organization)
   require "sessions/stat_organization"
 end

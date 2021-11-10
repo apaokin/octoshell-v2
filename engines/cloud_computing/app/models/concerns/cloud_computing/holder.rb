@@ -21,7 +21,6 @@ module CloudComputing
       has_many :left_items, ->{ left_joins(:to_links).where(cloud_computing_item_links: {id: nil})},
         as: :holder, class_name: Item.to_s, inverse_of: :holder
 
-      accepts_nested_attributes_for :new_left_items, :old_left_items, allow_destroy: true
       validates :for, presence: true, unless: :created?
     end
 

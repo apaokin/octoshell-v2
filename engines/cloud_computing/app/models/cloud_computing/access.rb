@@ -9,8 +9,10 @@ module CloudComputing
 
     has_many :requests, inverse_of: :access
 
-    accepts_nested_attributes_for :left_items,:new_left_items, :old_left_items,
+    accepts_nested_attributes_for :left_items, :new_left_items, :old_left_items,
                                   allow_destroy: true
+
+
     validates :for, :user, :allowed_by, presence: true
     validates :state, uniqueness: { scope: [:for_id, :for_type] }, if: :approved?
 

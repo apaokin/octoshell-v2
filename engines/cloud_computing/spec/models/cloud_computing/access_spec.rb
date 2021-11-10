@@ -82,27 +82,45 @@ module CloudComputing
       @access = FactoryBot.create(:cloud_access, state: 'approved',
                                   for: create(:project, state: 'active'))
 
+
+      # @access = CloudComputing::Request.create!(for: @project, created_by: @project.owner)
+      FactoryBot.create(:cloud_item, template: @template1, holder: @access)
       @item1 = FactoryBot.create(:cloud_item, template: @template1, holder: @access)
+      FactoryBot.create(:cloud_item, template: @template1, holder: @access)
 
       # @access.new_left_items += [FactoryBot.build(:cloud_item, template: @template1)]
 
 
-      @access.left_items.first.resource_items.each do |resource_item|
-        if resource_item.resource.number?
-          resource_item.value = '-2'
-        end
+      update_hash = {}
+
+      @item1.resource_items.each do |r_i|
+        next unless r_i.resource.number?
+
+        update_hash[r_i.id.to_s] = { 'value' => '-2', 'id' => r_i.id.to_s, 'resource_id' => r_i.resource_id.to_s }
       end
 
-      pp @access.new_left_items.map(&:resource_items).flatten.to_a
-      pp @access.old_left_items.map(&:resource_items).flatten.to_a
-      pp @access.left_items.map(&:resource_items).flatten.to_a
+      puts 'STARTED TEST'.red
+
+      expect(@access.update('new_left_items_attributes' => { '1' =>
+        { 'id'=> @item1.id.to_s,
+          'template_id' => @item1.template_id.to_s,
+          'resource_items_attributes' => update_hash
+        }
+      })).to eq false
+      puts 'UPDATED'
+      pp @access.errors.to_h
+      puts 'FINISHED'
+
+      # pp @access.new_left_items.map(&:resource_items).flatten.to_a
+      # pp @access.old_left_items.map(&:resource_items).flatten.to_a
+      # pp @access.left_items.map(&:resource_items).flatten.to_a
+
 
       # @item1.save!
       # @access.reload
       #
       # pp @item1.resource_items
 
-      expect(@access.save).to eq false
 
     end
 
