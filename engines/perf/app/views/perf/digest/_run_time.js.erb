@@ -1,0 +1,57 @@
+let jobs = <%= @jobs %>;
+let colors = [];
+let max = Math.max(...jobs.map(x => x.num_nodes));
+for (let step = 0; step < 100; step++) {
+  let color = evaluate_cmap(1.0/max * jobs[step].num_nodes, 'winter', false);
+  color = `rgb(${color.join(',')})`
+  colors.push(color);
+}
+
+const ctx = document.getElementById('myChart');
+const data = {
+  datasets: [{
+    label: 'Scatter Dataset',
+    data: jobs,
+    pointBackgroundColor: colors,
+  }],
+};
+
+const footer = (tooltipItems) => {
+  var index = tooltipItems[0].parsed.x;
+  return JSON.stringify(jobs[index].human, null, "\n");
+};
+
+const config = {
+    type: 'scatter',
+    data: data,
+    options: {
+      parsing: {
+        xAxisKey: 'index',
+        yAxisKey: 'run_time',
+      },
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: "<%= t('perf.common.job', default: 'job') %>"
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: "<%= t('perf.common.run_time', default: 'run_time') %>"
+          }
+        }
+
+      },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            footer: footer,
+          }
+        }
+      }
+    }
+  };
+
+new Chart(ctx, config);

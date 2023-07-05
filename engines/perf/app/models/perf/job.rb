@@ -3,8 +3,17 @@ module Perf
     self.table_name = "jobstat_jobs"
     belongs_to :member, class_name: 'Core::Member', foreign_key: 'login',
                         primary_key: 'login'
-    class << self
 
+    HUMAN = ['id', "cluster", "login", "partition", "submit_time", "start_time",
+             "end_time", "timelimit", "command", "state",  "num_nodes"].freeze
+
+    def human
+      attributes.select { |k| HUMAN.include? k }.transform_keys do |key|
+        self.class.human_attribute_name(key)
+      end
+    end
+
+    class << self
       def submitted_in(start_date, finish_date)
         where(submit_time: start_date..finish_date)
       end
@@ -80,10 +89,8 @@ module Perf
             versions.object LIKE CONCAT('%login: ', jobstat_jobs.login, '%\n')
           SQL
         ).to_sql
-
         exec_query("SELECT * from (#{sql}) AS a
-        where a.p_id IS NULL and a.c_id IS  NULL AND a.login != 'root'")
-
+        where a.p_id IS NULL and a.c_id IS  NULL")
       end
 
       def exec_query(*args)

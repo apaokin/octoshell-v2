@@ -1,0 +1,8 @@
+h1 = t('.title')  
+
+div
+  canvas#myChart
+script[src="https://cdn.jsdelivr.net/npm/chart.js"]
+
+= javascript_tag
+  = render partial: 'run_time', formats: 'js'
