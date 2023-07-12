@@ -1,6 +1,7 @@
 module Perf
   class DigestController < ApplicationController
     def run_time
+      @search = Perf::Job.ransack(params[:q])
       @jobs = Perf::Job.limit(100).to_a.each_with_index.map do |job, i|
         job.attributes.merge(
           'run_time' => hour_diff(job.end_time, job.start_time),

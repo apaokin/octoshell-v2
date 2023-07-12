@@ -16,6 +16,9 @@ ru:
         num_nodes: число узлов
 
   perf:
+    digest:
+      run_time:
+        title: Время выполнения по задачам
     common:
       job: Задача
       run_time: Время выполнения(ч)

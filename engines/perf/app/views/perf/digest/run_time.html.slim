@@ -1,4 +1,21 @@
-h1 = t('.title')  
+-content_for :title
+  -t('.title')
+h1 = t('.title')
+- options = common_datepicker_options
+
+= bootstrap_form_for @search, url: run_time_digest_index_path, method: :get do |f|
+    .row
+      .col-md-4
+        = f.text_field :start_time_gteq, options.merge(label: t('.start_time_gteq'))
+        = f.select :state_in, %w[COMPLETED RUNNING NODE_FAIL FAILED],{}, {multiple: true}
+      .col-md-4
+        = f.text_field :start_time_lteq, options.merge(label: t('.start_time_lteq'))
+        = f.select :login_in, Core::Member.where(user: current_user).map(&:login),{}, {multiple: true}
+      .col-md-4
+        = f.collection_select :cluster_in, Core::Cluster.where(available_for_work: true), :id, :name, {}, {multiple: true}
+    = f.form_group do
+      = f.submit t("actions.find"), class: "btn btn-primary"
+
 
 div
   canvas#myChart
