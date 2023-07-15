@@ -9,11 +9,11 @@ Perf::Engine.routes.draw do
     end
   end
 
-  resources :digest, only: [] do
-    collection do
-      get :run_time
-    end
-  end
+  # resources :digest, only: [] do
+  #   collection do
+  #     get :run_time
+  #   end
+  # end
 
   namespace :admin do
     resources :experts do
