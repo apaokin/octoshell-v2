@@ -1,0 +1,49 @@
+/h1 = t('.title')
+h1
+  |
+    Разбиение задач пользователя по числу узлов и запрошенному лимиту
+
+= bootstrap_form_for @form, url: analysis_path, method: :get, layout: :horizontal, label_col: "col-sm-4", control_col: 'col-sm-8' do |f|
+  .row
+      .col-md-6
+        = f.fields_for :q, @form.q do |ff|
+          .col-md-6
+            = ff.number_field  :num_nodes_gteq, label: 'Число узлов не меньше'
+            = ff.number_field  :timelimit_gteq, label: 'Временной лимит не меньше'
+            = ff.text_field  :submit_time_gteq, label: 'Поставлена в очередь не раньше'
+            = ff.collection_select  :command_eq, ['compute'],:to_s, :to_s, label: 'Команда запуска', include_blank: true
+          .col-md-6
+            = ff.number_field  :num_nodes_lteq, label: 'Число узлов не больше'
+            = ff.number_field  :timelimit_lteq, label: 'Временной лимит не больше'
+            = ff.text_field  :submit_time_lteq, label: 'Поставлена в очередь не позднее'
+            = ff.collection_select  :partition_eq, ['compute'],:to_s, :to_s, label: 'раздел'
+
+      .col-md-6
+        = f.collection_select :to_s, ['Превышение запрошенного лимита'], :to_s, :to_s, {label: 'параметр анализа'}, multiple: true
+        = f.number_field :to_s, label: 'Количество интервалов узлов'
+        = f.number_field :to_s, label: 'Количество интервалов временного лимита'
+
+  = f.form_group do
+    = f.submit t("actions.find"), class: "btn btn-primary"
+
+table class="table"
+  tr
+    th
+      | Запрошенное время
+    th
+      | Число узлов
+    th
+      | Число задач
+    th
+      | Доля задач, где запрошенный лимит превышен в 2 раза
+    th
+      | Доля задач, где запрошенный лимит превышен в 4 раза
+  - @records.each do |group, rows|
+    -rows.each_with_index do |r, i|
+      tr
+        -if i == 0
+          td rowspan=rows.count = link_to(rows.first['run_bin_human'])
+        td = link_to(r['node_bin_human'])
+        td = r['count']
+        td = r['extra_2'].round(2)
+        td = r['extra_4'].round(2)
