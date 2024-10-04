@@ -1,3 +1,19 @@
 ---
 jobstat:filters:1: []
 jobstat:feedback_job:1:1,2: []
+jobstat:filters:4:
+- account: none
+  class: -1
+  cluster: all
+  feedback: test modal hide
+  filters:
+  - rule_mem_disbalance
+  user: 4
+- account: none
+  class: -1
+  cluster: all
+  feedback: ''
+  filters:
+  - ''
+  user: 4
+jobstat:feedback_job:4:1,2: []

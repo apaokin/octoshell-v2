@@ -6,3 +6,4 @@ namespace :db do
     system "bzip2 #{tar}"
   end
 end
+#29 0 * * * /bin/bash -l -c 'cd /var/www/octoshell2/current/ && date >> /var/www/octoshell2/shared/log/cron.log && RAILS_ENV=production nice -n 20 ionice -c3 rbenv exec bundle exec rake db:backup >> /var/www/octoshell2/shared/log/cron.log 2>&1'
