@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_07_03_123357) do
+ActiveRecord::Schema.define(version: 2025_01_23_153056) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -885,6 +885,16 @@ ActiveRecord::Schema.define(version: 2024_07_03_123357) do
     t.index ["job_id"], name: "index_jobstat_string_data_on_job_id"
   end
 
+  create_table "octo_settings", force: :cascade do |t|
+    t.string "key"
+    t.text "value_ru"
+    t.text "value_en"
+    t.string "file_name"
+    t.string "kind"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "options", id: :serial, force: :cascade do |t|
     t.integer "owner_id"
     t.string "owner_type"
@@ -1013,6 +1023,12 @@ ActiveRecord::Schema.define(version: 2024_07_03_123357) do
     t.datetime "updated_at"
     t.integer "subject_id"
     t.index ["group_id"], name: "index_permissions_on_group_id"
+  end
+
+  create_table "policies", force: :cascade do |t|
+    t.string "title"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "profiles", id: :serial, force: :cascade do |t|

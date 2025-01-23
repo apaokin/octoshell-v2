@@ -103,6 +103,9 @@ ru:
     submit: Отправить
   activerecord:
     attributes:
+      octo_setting:
+        policy: Политика обработки персональных данных
+        full_organization_name: Полное название организации-держателя 
       category_value:
         value: Значение
       group:

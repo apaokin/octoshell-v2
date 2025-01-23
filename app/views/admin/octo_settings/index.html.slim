@@ -1,0 +1,7 @@
+div class="page-header"
+  h1 = t(".title", default: "Settings for Octoshell")
+= bootstrap_form_tag(url: update_all_admin_octo_settings_path) do |f|
+  - OctoSetting.human_kinds.each do |kind, human|
+    h3 = human
+    = f.fields_for :
+    =link_to t('.new'), new_admin_octo_setting_path(octo_setting:{kind: kind})
