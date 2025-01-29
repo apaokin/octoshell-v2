@@ -1,0 +1,7 @@
+= bootstrap_form_for [:admin,@octo_setting], layout: :vertical do |f|
+  = f.collection_select :kind, OctoSetting.human_kinds, :first, :second
+  = f.text_area :value_ru
+  = f.text_area :value_en
+  = f.check_box :active
+  = f.form_group do
+    = f.submit t("buttons.save")

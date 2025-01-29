@@ -1,7 +1,22 @@
 div class="page-header"
   h1 = t(".title", default: "Settings for Octoshell")
-= bootstrap_form_tag(url: update_all_admin_octo_settings_path) do |f|
   - OctoSetting.human_kinds.each do |kind, human|
     h3 = human
-    = f.fields_for :
-    =link_to t('.new'), new_admin_octo_setting_path(octo_setting:{kind: kind})
+    = link_to t('.new'), new_admin_octo_setting_path(octo_setting: {kind: kind}), class: "btn btn-info btn-sm"
+    - kind_settings =  @octo_settings[kind.to_s]
+    - if kind_settings
+      table class="table table-hover"
+        tr
+          th
+          - OctoSetting.locale_columns(:value).each do |col|
+            th = OctoSetting.human_attribute_name(col)
+          th = OctoSetting.human_attribute_name(:active)
+          th
+        - kind_settings.each do |setting|
+          tr
+            th = link_to setting.id, [:edit, :admin, setting]
+            - OctoSetting.locale_columns(:value).each do |col|
+              th = setting.human_value(col)
+            td
+               font color=(setting.active ? 'green': 'black') = setting.active
+            td = link_to t('actions.delete'), [:admin, setting], method: 'delete', class: "btn btn-danger btn-sm"

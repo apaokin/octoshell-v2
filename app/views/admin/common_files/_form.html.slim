@@ -1,0 +1,5 @@
+= bootstrap_form_for [:admin,@common_file], layout: :vertical do |f|
+  = f.text_area :description
+  = f.file_field :file
+  = f.form_group do
+    = f.submit t("buttons.save")

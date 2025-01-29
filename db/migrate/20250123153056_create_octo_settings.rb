@@ -4,8 +4,8 @@ class CreateOctoSettings < ActiveRecord::Migration[5.2]
       t.string :key
       t.text :value_ru
       t.text :value_en
-      t.string :file_name
       t.string :kind
+      t.boolean :active
       t.timestamps
     end
   end

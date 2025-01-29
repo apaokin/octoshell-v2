@@ -809,11 +809,9 @@ Octoshell::Application.routes.draw do
 
     end
 
-    resources :octo_settings, only: %i[index new edit] do
-      collection do
-        post :update_all
-      end
-    end
+    resources :octo_settings
+    resources :common_files
+
     mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
   end
   get '*path.:ext', to: 'catch_all#index', xhr: true
