@@ -1,0 +1,7 @@
+= bootstrap_form_for [:admin, @session], layout: :horizontal do |f|
+  -Sessions::Session.locale_columns(:description,:motivation).each do |column|
+    = f.text_field column
+  = f.text_field :receiving_to, as: :string, class: "datepicker"
+  = f.text_field :access_from, as: :string, class: "datepicker"
+  = f.form_group do
+    = f.submit t("actions.next")
